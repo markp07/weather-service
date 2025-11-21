@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Copying the demo-authentication service
 - 
 ## [1.4.4] - 2025-11-18
+## [0.0.2] - 2025-11-21
+
+### Changed
+- Major refactoring of the project Removing authentication service due to project split up Refactoring weather service to be single module project
+
 
 ### Changed
 - Move saved locations from localStorage to database with user linkage (#62)
