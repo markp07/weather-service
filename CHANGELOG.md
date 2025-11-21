@@ -5,23 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Added
-- OpenAPI 3.0 specification for Weather Service (`weather-api-v1.yaml`)
-- OpenAPI Generator Maven plugin configuration for Weather Service
-- Automated code generation for Weather Service controller interfaces and models
-- WeatherModelMapper for converting between domain models and API models
-- Comprehensive API documentation for both Authentication and Weather services
-- Passkey/WebAuthn endpoints to Authentication Service OpenAPI specification for complete API documentation
-
-### Changed
-- Refactored WeatherController to implement generated WeatherApi interface
-- Updated README.md with OpenAPI documentation and code generation details
-- Enhanced Weather Service with proper API specification and validation
-- Enhanced Authentication Service OpenAPI spec with complete Passkey endpoint documentation
-
-## [1.0.0] - 2025-11-02
 ## [1.4.4] - 2025-11-18
 
 ### Changed
@@ -121,7 +104,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor authentication flow to use custom DTO for PublicKeyCredentialRequestOptions, excluding null values
 - Add JsonNullableModule to Jackson configuration for better null handling
 
-
 ### Added
 - Dependabot configuration for automated dependency updates (Maven, npm, Docker)
 - Dependabot grouping for streamlined PR management
@@ -132,7 +114,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.0] - 2025-10-11
 
+### Added
+- OpenAPI 3.0 specification for Weather Service (`weather-api-v1.yaml`)
+- OpenAPI Generator Maven plugin configuration for Weather Service
+- Automated code generation for Weather Service controller interfaces and models
+- WeatherModelMapper for converting between domain models and API models
+- Comprehensive API documentation for both Authentication and Weather services
+- Passkey/WebAuthn endpoints to Authentication Service OpenAPI specification for complete API documentation
+
 ### Changed
+- Refactored WeatherController to implement generated WeatherApi interface
+- Updated README.md with OpenAPI documentation and code generation details
+- Enhanced Weather Service with proper API specification and validation
+- Enhanced Authentication Service OpenAPI spec with complete Passkey endpoint documentation
 - Updated all dependency versions to latest stable releases
 - Refactored JWT token parsing to use updated JJWT API
 
