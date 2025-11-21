@@ -1,0 +1,129 @@
+# Set the base path for the API
+server:
+  port: 12002
+  servlet:
+    context-path: /api/auth
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+jwt:
+  private-key: classpath:keys/private_key.pem
+  public-key: classpath:keys/public_key.pem
+
+spring:
+  cache:
+    type: redis
+  data:
+    redis:
+      host: redis
+      port: 12005
+  datasource:
+    url: jdbc:postgresql://postgres:5432/authentication_service?useUnicode=true&characterEncoding=UTF-8
+    username: authentication_service
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        connection:
+          useUnicode: true
+          characterEncoding: UTF-8
+  jackson:
+    default-property-inclusion: non_null
+    deserialization:
+      fail-on-unknown-properties: false
+  mail:
+    host: smtp.example.com
+    port: 587
+    username: your_smtp_username
+    password: your_smtp_password
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+security:
+  excluded-paths: /actuator/health,/actuator/info,/actuator/prometheus,/api/auth/actuator/health,/api/auth/actuator/info,/api/auth/actuator/prometheus,/swagger-ui.html,/swagger-ui/**,/*/api-docs,/v1/register,/v1/login,/v1/refresh,/v1/2fa/verify,/v1/password/forgot,/v1/password/reset,/v1/public-key,/v1/passkey/login/start,/v1/passkey/login/finish,/v1/passkey/login/usernameless/start,/v1/passkey/login/usernameless/finish
+
+authentication:
+  cors:
+    allowed-origin-patterns: http://localhost:12006,https://demo.markpost.dev
+
+email:
+  from: "no-reply@example.com"
+  subject:
+    reset-password: "Password Reset Request"
+  body:
+    reset-password: "Hi {userName},\nTo reset your password, use the following link: https://demo.markpost.dev/?token={resetToken}\nRegards,\nAuthentication Demo Service"
+
+cookie:
+  secure: true
+
+webauthn:
+  rp:
+    name: "Authentication Demo Service"
+    id: "demo.markpost.dev"
+  origin: "https://demo.markpost.dev"
+
+---
+# Local environment profile
+spring:
+  config:
+    activate:
+      on-profile: local
+  cache:
+    type: redis
+  data:
+    redis:
+      host: localhost
+      port: 12005
+  datasource:
+    url: jdbc:postgresql://localhost:12004/authentication_service
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  jackson:
+    default-property-inclusion: non_null
+    deserialization:
+      fail-on-unknown-properties: false
+
+authentication:
+  cors:
+    allowed-origin-patterns: "http://localhost:3000"
+
+cookie:
+  secure: false
+
+webauthn:
+  rp:
+    name: "Authentication Demo Service"
+    id: "localhost"
+  origin: "http://localhost:3000"
+
+---
+# UT environment profile
+spring:
+  config:
+    activate:
+      on-profile: ut
+
+security:
+  excluded-paths: /actuator/health,/actuator/info,/swagger-ui.html,/swagger-ui/**,/*/api-docs,/v1/login,/v1/register,/v1/refresh,/v1/2fa/verify,/v1/password/forgot,/v1/password/reset,/v1/public-key,/v1/passkey/login/start,/v1/passkey/login/finish,/v1/passkey/login/usernameless/start,/v1/passkey/login/usernameless/finish

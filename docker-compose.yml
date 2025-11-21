@@ -1,0 +1,89 @@
+services:
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - '12005:6379'
+    command: [ "redis-server", "--bind", "0.0.0.0" ]
+    hostname: cache
+    volumes:
+      - cache:/data
+    networks:
+      - default-network
+
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: authentication_service
+      POSTGRES_USER: authentication_service
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - '12004:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks:
+      - default-network
+
+  authentication-service:
+    image: authentication-service:latest
+    restart: always
+    build:
+      context: ./authentication-service
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+      - postgres
+    ports:
+      - '12002:12002'
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - authentication_service_data:/data
+    networks:
+      - default-network
+
+  weather-service:
+    image: weather-service:latest
+    restart: always
+    build:
+      context: ./weather-service
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+      - postgres
+    ports:
+      - '12001:12001'
+    volumes:
+      - weather_service_data:/data
+    networks:
+      - default-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "12006:3000"
+    depends_on:
+      - authentication-service
+      - weather-service
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:12002
+    networks:
+      - default-network
+
+volumes:
+  cache:
+    driver: local
+  postgres_data:
+    driver: local
+  authentication_service_data:
+    driver: local
+  weather_service_data:
+    driver: local
+
+networks:
+  default-network:
+    external: true
