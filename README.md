@@ -1,111 +1,102 @@
-# Demo Authentication
+# Weather Service
 
-A comprehensive demonstration project for learning modern authentication and authorization patterns using Spring Boot Security, including traditional login, TOTP-based two-factor authentication (2FA), and WebAuthn passkeys.
+A modern weather application that provides real-time weather data and forecasts using the Open-Meteo API, with secure JWT authentication and multi-language support.
 
-## 🎯 Project Aim
+## 🌟 Features
 
-This project serves as a learning platform for implementing secure authentication and authorization mechanisms in modern web applications. It demonstrates:
+- **Real-time Weather Data**: Current weather conditions for any location
+- **14-Day Forecast**: Extended weather predictions
+- **Hourly Forecasts**: Detailed hourly weather information with interactive graphs
+- **Saved Locations**: Save and manage multiple locations
+- **Multi-language Support**: Available in English, Dutch, German, and French
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **JWT Authentication**: Secure authentication via external auth service
+- **Docker Support**: Easy deployment with Docker Compose
+- **Weather Icons**: Dynamic weather icons that change based on conditions and time of day
 
-- **Traditional Authentication**: Username/password-based login with secure password storage
-- **Two-Factor Authentication (2FA)**: Time-based One-Time Password (TOTP) implementation with QR code generation
-- **Passkeys/WebAuthn**: Modern passwordless authentication using FIDO2/WebAuthn standards
-- **JWT Token Management**: Secure token-based authentication with refresh token rotation
-- **Password Management**: Password reset, change password, and forgot password flows
-- **Session Management**: Redis-backed session storage with logout functionality
-- **Spring Boot Security**: Comprehensive security configuration and best practices
+## 🏗️ Architecture
 
-## 🏗️ Project Structure
+### Backend (Spring Boot)
+- **Java 21** with Spring Boot 3.4.1
+- **PostgreSQL** for data persistence (saved locations)
+- **Redis** for caching weather data
+- **JWT** authentication with public key validation
+- **Open-Meteo API** integration for weather data
+- **MapStruct** for DTO mapping
+- **OpenAPI** specification with code generation
+
+### Frontend (Next.js)
+- **Next.js 15.1** with React 19
+- **TypeScript** for type safety
+- **Tailwind CSS** for styling
+- **next-intl** for internationalization
+- **Recharts** for data visualization
+- **React Bootstrap Icons** for weather icons
+- **DnD Kit** for drag-and-drop location reordering
+
+## 📁 Project Structure
 
 ```
-demo-authentication/
-├── authentication-service/   # Main authentication service (Spring Boot)
+weather-service/
+├── pom.xml                       # Parent POM
+├── weather-service/              # Spring Boot backend
 │   ├── src/
-│   │   ├── main/java/nl/markpost/demo/authentication/
-│   │   │   ├── controller/      # REST API controllers
-│   │   │   ├── service/         # Business logic layer
-│   │   │   ├── repository/      # JPA repositories
-│   │   │   ├── model/           # Domain entities
-│   │   │   ├── security/        # Security configuration
-│   │   │   ├── filter/          # Custom filters
-│   │   │   └── dto/             # Data transfer objects
-│   │   └── test/                # Unit and integration tests
+│   │   ├── main/
+│   │   │   ├── java/nl/markpost/weather/
+│   │   │   │   ├── client/       # External API clients
+│   │   │   │   ├── common/       # Shared utilities and exceptions
+│   │   │   │   ├── config/       # Configuration classes
+│   │   │   │   ├── controller/   # REST controllers
+│   │   │   │   ├── exception/    # Exception handlers
+│   │   │   │   ├── filter/       # Security filters (JWT)
+│   │   │   │   ├── mapper/       # Entity/DTO mappers
+│   │   │   │   ├── model/        # Domain models
+│   │   │   │   ├── repository/   # JPA repositories
+│   │   │   │   └── service/      # Business logic
+│   │   │   └── resources/
+│   │   │       ├── application.yaml     # Application config
+│   │   │       └── api/
+│   │   │           └── weather-api.yaml # OpenAPI spec
+│   │   └── test/                 # Unit and integration tests
+│   ├── Dockerfile
 │   └── pom.xml
-├── weather-service/          # Demo service protected by authentication
-│   ├── src/
-│   └── pom.xml
-├── frontend/                 # Next.js React frontend
-│   ├── src/
-│   │   ├── app/             # Next.js app router pages
-│   │   └── components/      # React components
-│   └── package.json
-├── common/                   # Shared utilities and exceptions
-└── docker-compose.yml       # Docker orchestration
+└── frontend/                     # Next.js frontend
+    ├── src/
+    │   ├── app/                  # Next.js pages (dashboard)
+    │   ├── components/           # React components
+    │   │   ├── HourlyGraphModal.tsx
+    │   │   ├── LocationBar.tsx
+    │   │   ├── LocationSearch.tsx
+    │   │   ├── SavedLocations.tsx
+    │   │   └── Sidebar.tsx
+    │   ├── i18n/                 # Internationalization config
+    │   ├── types/                # TypeScript types
+    │   └── utils/                # Utility functions
+    ├── messages/                 # Translation files
+    │   ├── en.json              # English
+    │   ├── nl.json              # Dutch
+    │   ├── de.json              # German
+    │   └── fr.json              # French
+    ├── Dockerfile
+    └── package.json
 ```
-
-## 🛠️ Technologies Used
-
-### Backend (Authentication Service)
-- **Spring Boot 3.5.6**: Modern Java framework
-- **Spring Security**: Authentication and authorization framework
-- **PostgreSQL**: Primary database for user data
-- **Redis**: Session storage and caching
-- **JWT (JJWT 0.13.0)**: JSON Web Token implementation
-- **WebAuthn (Yubico 2.7.0)**: FIDO2/WebAuthn server library for passkey support
-- **OTP-Java 2.1.0**: TOTP implementation for 2FA
-- **ZXing 3.5.3**: QR code generation for 2FA setup
-- **MapStruct**: Object mapping
-- **Lombok**: Boilerplate reduction
-- **JPA/Hibernate**: Database ORM
-- **OpenAPI/Swagger**: API documentation
-
-### Backend (Weather Service)
-- **Spring Boot 3.5.6**: Microservice framework
-- **Spring Cloud OpenFeign**: REST client for external APIs
-- **Redis**: Caching layer
-- **MapStruct**: DTO mapping
-
-### Frontend
-- **Next.js 15.4.2**: React framework
-- **React 19.1.0**: UI library
-- **TypeScript**: Type-safe JavaScript
-- **Tailwind CSS 4**: Utility-first CSS framework
-- **QR Code React**: QR code display for 2FA
-
-### Infrastructure
-- **Docker & Docker Compose**: Containerization
-- **Maven**: Build automation
-- **JaCoCo**: Code coverage
-- **JUnit 5**: Testing framework
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- **Java 21** or later
-- **Node.js 20** or later
-- **Maven 3.6.3** or later
-- **Docker** and **Docker Compose**
-- **PostgreSQL 16** (or use Docker)
-- **Redis 7** (or use Docker)
+- Java 21
+- Node.js 20+
+- Docker & Docker Compose
+- PostgreSQL 16 (for local development)
+- Redis 7 (for local development)
 
-### Environment Setup
+### Environment Variables
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/markp07/demo-authentication.git
-   cd demo-authentication
-   ```
-
-2. **Generate RSA keys for JWT signing**
-   ```bash
-   ./generate-keys.sh
-   ```
-
-3. **Set environment variables**
-   Create a `.env` file in the project root:
-   ```bash
-   POSTGRES_PASSWORD=your_secure_password
-   ```
+Create a `.env` file in the project root:
+```env
+POSTGRES_PASSWORD=your_secure_password
+```
 
 ### Running with Docker Compose
 
@@ -113,194 +104,313 @@ The easiest way to run the entire stack:
 
 ```bash
 # Build and start all services
-./build-and-up.sh
-
-# Or manually:
-docker network create default-network
 docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
 ```
 
 This will start:
-- **PostgreSQL** on port `12004`
-- **Redis** on port `12005`
-- **Authentication Service** on port `12002`
-- **Weather Service** on port `12001`
-- **Frontend** on port `12006`
+- **PostgreSQL** on port `13003` (internal: 5432)
+- **Redis** on port `13004` (internal: 6379)
+- **Weather Service** on port `13001`
+- **Frontend** on port `13002` (internal: 3030)
 
-Access the application at: `http://localhost:12006`
+Access the application at: `http://localhost:13002`
 
-### Running Locally (Development)
+### Local Development
 
-#### Backend Services
+#### Backend
 
-1. **Start PostgreSQL and Redis**
-   ```bash
-   docker-compose up -d postgres redis
-   ```
+```bash
+# Start dependencies
+docker-compose up -d weather-postgres weather-redis
 
-2. **Build the project**
-   ```bash
-   ./mvnw clean install
-   ```
+# Build the project
+./mvnw clean install
 
-3. **Run Authentication Service**
-   ```bash
-   cd authentication-service
-   ../mvnw spring-boot:run
-   ```
+# Run with local profile
+cd weather-service
+../mvnw spring-boot:run -Dspring-boot.run.profiles=local
+```
 
-4. **Run Weather Service**
-   ```bash
-   cd weather-service
-   ../mvnw spring-boot:run
-   ```
+Backend will be available at: `http://localhost:13001`
 
 #### Frontend
 
 ```bash
 cd frontend
+
+# Install dependencies
 npm install
+
+# Run development server
 npm run dev
 ```
 
-Access at: `http://localhost:3000`
+Frontend will be available at: `http://localhost:3030`
 
-## 📚 API Documentation
+## 🌐 API Documentation
 
-### OpenAPI Specifications
+### OpenAPI Specification
 
-This project uses OpenAPI 3.0 specifications with automated code generation for both services:
-
-**Authentication Service:**
-- **Swagger UI**: `http://localhost:12002/swagger-ui.html`
-- **OpenAPI Spec**: `http://localhost:12002/v3/api-docs`
-- **Spec File**: `authentication-service/src/main/resources/api/authentication-api-v1.yaml`
-
-**Weather Service:**
-- **Swagger UI**: `http://localhost:12001/swagger-ui.html`
-- **OpenAPI Spec**: `http://localhost:12001/v3/api-docs`
-- **Spec File**: `weather-service/src/main/resources/api/weather-api-v1.yaml`
-
-### Code Generation
-
-Both services use the OpenAPI Generator Maven plugin to automatically generate:
-- Controller interfaces with proper annotations
-- Model/DTO classes with validation
-- API documentation
-
-Generated code is created during the Maven build process and placed in `target/generated-sources`.
+- **Swagger UI**: `http://localhost:13001/swagger-ui.html`
+- **OpenAPI Spec**: `http://localhost:13001/api/weather/v3/api-docs`
+- **Spec File**: `weather-service/src/main/resources/api/weather-api.yaml`
 
 ### Key Endpoints
 
-#### Authentication
-- `POST /v1/auth/register` - Register new user
-- `POST /v1/auth/login` - Login with username/password
-- `POST /v1/auth/logout` - Logout and invalidate tokens
-- `POST /v1/auth/refresh` - Refresh access token
+#### Weather
+- `GET /api/weather/v1/forecast?latitude={lat}&longitude={lon}` - Get weather forecast
+- `GET /api/weather/v1/current?latitude={lat}&longitude={lon}` - Get current weather
 
-#### Two-Factor Authentication
-- `POST /v1/2fa/setup` - Initialize 2FA setup (returns QR code)
-- `POST /v1/2fa/enable` - Enable 2FA with TOTP code
-- `POST /v1/2fa/verify` - Verify TOTP during login
-- `POST /v1/2fa/disable` - Disable 2FA
-- `POST /v1/2fa/backup-code` - Generate backup code
-- `POST /v1/2fa/reset` - Reset 2FA with backup code
+#### Saved Locations
+- `GET /api/weather/v1/saved-locations` - List saved locations
+- `POST /api/weather/v1/saved-locations` - Save a new location
+- `PUT /api/weather/v1/saved-locations/{id}` - Update location
+- `DELETE /api/weather/v1/saved-locations/{id}` - Delete location
+- `PUT /api/weather/v1/saved-locations/reorder` - Reorder locations
 
-#### Passkeys/WebAuthn
-- `GET /v1/passkey` - List registered passkeys
-- `POST /v1/passkey/register/start` - Start passkey registration
-- `POST /v1/passkey/register/finish` - Complete passkey registration
-- `POST /v1/passkey/login/start` - Start passkey authentication
-- `POST /v1/passkey/login/finish` - Complete passkey authentication
-- `DELETE /v1/passkey/{id}` - Delete passkey
+#### Health Check
+- `GET /api/weather/actuator/health` - Service health status
 
-#### Password Management
-- `POST /v1/password/change` - Change password (authenticated)
-- `POST /v1/password/forgot` - Request password reset
-- `POST /v1/password/reset` - Reset password with token
+All weather endpoints require JWT authentication.
 
-#### User Management
-- `GET /v1/user` - Get current user details
-- `PUT /v1/user/username` - Update username
-- `DELETE /v1/user` - Delete account
+## 🔐 Security
 
-#### Weather Service
-- `GET /v1/forecast` - Get weather forecast for coordinates (requires authentication)
-- `GET /v1/saved-locations` - Get saved locations for authenticated user
-- `POST /v1/saved-locations` - Save a new location
-- `DELETE /v1/saved-locations/{id}` - Delete a saved location
-- `PUT /v1/saved-locations/reorder` - Reorder saved locations (drag & drop)
+### JWT Authentication
 
-## 🔐 Security Features
+The weather service uses JWT tokens for authentication, validated against an external auth service:
 
-- **Password Security**: BCrypt hashing with configurable strength
-- **JWT Tokens**: RSA-signed tokens with short expiration
-- **Refresh Tokens**: Secure rotation with Redis storage
-- **CSRF Protection**: Configured for stateless REST APIs
-- **CORS**: Configurable cross-origin resource sharing
-- **Rate Limiting**: (Redis-backed, configurable)
-- **Secure Headers**: Spring Security default headers
-- **HTTPS Ready**: Secure cookie flags for production
+- **Production**: `https://auth.markpost.dev/api/auth/v1/public-key`
+- **Local Development**: `http://localhost:3000/api/auth/v1/public-key`
+
+### Security Features
+
+- JWT public key validation
+- Token refresh mechanism
+- Secure HTTP-only cookies
+- CORS configuration
+- Protected endpoints with Spring Security
+- Excluded paths for health checks and API docs
+
+### Authentication Flow
+
+1. User authenticates via external auth service
+2. JWT token stored in HTTP-only cookie
+3. Weather service validates token using public key
+4. Token automatically refreshed when needed
+5. On 401, redirect to auth service with callback URL
+
+## 🌍 Internationalization
+
+The application supports four languages with complete translations:
+
+- 🇬🇧 **English** (en)
+- 🇳🇱 **Dutch** (nl)
+- 🇩🇪 **German** (de)
+- 🇫🇷 **French** (fr)
+
+All UI elements and weather conditions are fully translated, with automatic language detection from browser preferences.
+
+## 📊 Caching Strategy
+
+### Redis Caching
+
+- **Weather Data**: 5-minute TTL
+- **Public Key**: 1-hour TTL (automatic refresh)
+- Cache key format: `weather:{latitude}:{longitude}`
+
+### Cache Configuration
+
+```yaml
+spring:
+  cache:
+    type: redis
+  data:
+    redis:
+      host: weather-redis
+      port: 6379
+```
+
+## 🐳 Docker Configuration
+
+### Services
+
+| Service | Internal Port | External Port | Description |
+|---------|--------------|---------------|-------------|
+| weather-postgres | 5432 | 13003 | PostgreSQL database |
+| weather-redis | 6379 | 13004 | Redis cache |
+| weather-service | 13001 | 13001 | Spring Boot API |
+| weather-frontend | 3030 | 13002 | Next.js frontend |
+
+### Health Checks
+
+All services include health checks for proper startup ordering:
+
+- **PostgreSQL**: `pg_isready` check
+- **Redis**: `redis-cli ping` check
+- **Backend**: Spring Boot actuator health endpoint
+- **Frontend**: HTTP request to homepage
+
+### Container Names
+
+- `weather-postgres`
+- `weather-redis`
+- `weather-service`
+- `weather-frontend`
 
 ## 🧪 Testing
 
-### Run Unit Tests
+### Backend Tests
+
 ```bash
+# Run all tests
 ./mvnw test
+
+# Run with coverage
+./mvnw verify
+
+# Run specific test class
+./mvnw test -Dtest=WeatherServiceTest
 ```
 
-### Run with Coverage
+Coverage reports: `target/site/jacoco/index.html`
+
+### Frontend Tests
+
 ```bash
-./mvnw clean verify
+cd frontend
+
+# Run all tests
+npm test
+
+# Run with coverage
+npm test -- --coverage
+
+# Run in watch mode
+npm test -- --watch
 ```
 
-Coverage reports are generated in `target/site/jacoco/index.html`
+Test results: 71 tests passing
 
 ## 📝 Configuration
 
-Key configuration files:
+### Application Profiles
 
-- `authentication-service/src/main/resources/application.yaml` - Service configuration
-- `weather-service/src/main/resources/application.yaml` - Weather service config
-- `docker-compose.yml` - Container orchestration
-- `pom.xml` - Maven dependencies and build configuration
-
-## 📦 Versioning
-
-This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html) with automatic version management through GitHub Actions.
-
-### Version Bump Rules
-
-Versions are automatically incremented based on branch naming conventions when merging PRs to `master`/`main`:
-
-- **Major version** (`X.0.0`): Branches starting with `major/*` or PRs with `[major]` tag or containing `BREAKING CHANGE`
-  - Example: `major/api-redesign` → version bumps from `1.2.3` to `2.0.0`
+#### Default (Production/Docker)
+```yaml
+server:
+  port: 13001
   
-- **Minor version** (`x.Y.0`): Branches starting with `feature/*` or PRs with `[feature]` tag
-  - Example: `feature/add-oauth` → version bumps from `1.2.3` to `1.3.0`
-  
-- **Patch version** (`x.y.Z`): Branches starting with `fix/*`, `bugfix/*`, or Dependabot PRs
-  - Example: `fix/login-bug` → version bumps from `1.2.3` to `1.2.4`
-  - Example: Dependabot updates → version bumps from `1.2.3` to `1.2.4`
+spring:
+  datasource:
+    url: jdbc:postgresql://weather-postgres:5432/weather_service
+  data:
+    redis:
+      host: weather-redis
+      port: 6379
+      
+jwt:
+  public-key-url: https://auth.markpost.dev/api/auth/v1/public-key
+```
 
-### Automatic Actions
+#### Local Profile
+```yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:13003/weather_service
+  data:
+    redis:
+      host: localhost
+      port: 13004
+      
+jwt:
+  public-key-url: http://localhost:3000/api/auth/v1/public-key
+```
 
-On each merge to `master`/`main`:
-1. Version is automatically bumped in `pom.xml` and `frontend/package.json`
-2. `CHANGELOG.md` is updated with commit history
-3. Git tag is created (e.g., `v1.2.3`)
-4. GitHub Release is created with release notes
+## 📦 Build & Deploy
 
-### Manual Version Override
+### Build Backend
 
-You can also control versioning through commit messages:
-- `feat:` prefix → minor version bump
-- `fix:` prefix → patch version bump
-- `BREAKING CHANGE` in message → major version bump
+```bash
+# Build JAR
+./mvnw clean package
 
-## 🤝 Contributing
+# Skip tests
+./mvnw clean package -DskipTests
 
-This is a demonstration project for learning purposes. Feel free to fork and experiment!
+# Build Docker image
+docker-compose build weather-service
+```
+
+### Build Frontend
+
+```bash
+cd frontend
+
+# Production build
+npm run build
+
+# Build Docker image
+docker-compose build weather-frontend
+```
+
+## 🚢 Releases
+
+The project uses semantic versioning with automated releases via GitHub Actions.
+
+### Create a Release
+
+```bash
+# Create and push a tag
+git tag -a v1.0.0 -m "Release version 1.0.0"
+git push origin v1.0.0
+```
+
+This triggers:
+- Docker image build for both backend and frontend
+- Tag with version number
+- Push to container registry
+- GitHub Release creation
+
+### Version Format
+
+- **Major** (v2.0.0): Breaking changes
+- **Minor** (v1.1.0): New features
+- **Patch** (v1.0.1): Bug fixes
+
+## 📦 Dependencies
+
+### Backend
+- Spring Boot 3.4.1
+- Spring Security 6.5.6
+- Spring Data JPA
+- PostgreSQL Driver 42.7.8
+- Redis (Lettuce)
+- MapStruct 1.6.3
+- Lombok 1.18.36
+- JJWT 0.12.6
+- OpenAPI Generator
+
+### Frontend
+- Next.js 15.1.3
+- React 19.0.0
+- TypeScript 5.7.2
+- Tailwind CSS 4.0.0
+- next-intl 3.26.2
+- Recharts 2.15.0
+- React Bootstrap Icons 1.11.4
+- DnD Kit 6.3.1
+
+## 🔗 Related Services
+
+- **Auth Service**: https://auth.markpost.dev
+- **Production URL**: https://weather.markpost.dev
+- **API Docs**: https://weather.markpost.dev/swagger-ui.html
 
 ## 📄 License
 
@@ -310,9 +420,23 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Mark Post**
 - GitHub: [@markp07](https://github.com/markp07)
+- Email: mark@markpost.nl
 
 ## 🙏 Acknowledgments
 
-- Spring Boot team for excellent documentation
-- Yubico for WebAuthn server library
-- Open-Meteo for weather API (used in demo service)
+- [Open-Meteo](https://open-meteo.com/) for free weather API
+- Spring Boot team for excellent framework
+- Next.js team for React framework
+- Vercel for next-intl internationalization library
+
+## 📞 Support
+
+For issues and questions:
+- GitHub Issues: https://github.com/markp07/weather-service/issues
+- Email: mark@markpost.nl
+
+---
+
+**Last Updated**: December 2024
+**Version**: 1.7.1
+
