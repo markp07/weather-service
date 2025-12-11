@@ -6,18 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [1.7.1] - 2025-12-10
-
-### Changed
-- Fix/authentication callback (#91)
-
-## [1.7.0] - 2025-12-10
 ## [1.8.0] - 2025-12-11
 
 ### Changed
 - refactor: update README to reflect project name change and enhance feature descriptions
 - feat: enhance weather translations with additional conditions and improve existing terms
 
+## [1.7.1] - 2025-12-10
+
+### Changed
+- Fix/authentication callback (#91)
+
+## [1.7.0] - 2025-12-10
 
 ### Changed
 - Adding multi language support - EN NL DE FR (#90)
