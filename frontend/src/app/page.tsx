@@ -18,10 +18,10 @@ import { weatherCodeToTranslationKey, dayNumberToTranslationKey } from "../utils
 const isDev = typeof window !== "undefined" && window.location.hostname === "localhost";
 const AUTH_API_BASE = isDev
   ? (process.env.NEXT_PUBLIC_API_URL || "http://localhost:12002")
-  : "https://demo.markpost.dev";
+  : "https://auth.markpost.dev";
 const WEATHER_API_BASE = isDev
   ? (process.env.NEXT_PUBLIC_WEATHER_API_URL || "http://localhost:12001")
-  : "https://demo.markpost.dev";
+  : "https://weather.markpost.dev";
 
 function getWeatherIcon(code: string, size = 32, currentTime?: string, sunRise?: string, sunSet?: string) {
   const isNight = currentTime && sunRise && sunSet ? isNightTime(currentTime, sunRise, sunSet) : false;
