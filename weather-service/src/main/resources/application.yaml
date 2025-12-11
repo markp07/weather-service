@@ -20,9 +20,9 @@ spring:
   data:
     redis:
       host: weather-redis
-      port: 13004
+      port: 6379
   datasource:
-    url: jdbc:postgresql://weather-postgres:13003/weather_service?useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:postgresql://weather-postgres:5432/weather_service?useUnicode=true&characterEncoding=UTF-8
     username: weather_service
     password: ${POSTGRES_PASSWORD}
   jpa:
@@ -45,7 +45,7 @@ security:
 
 authentication:
   cors:
-    allowed-origin-patterns: http://localhost:12006,https://weather.markpost.dev
+    allowed-origin-patterns: http://localhost:3030,https://weather.markpost.dev
 
 logging:
   level:
@@ -53,7 +53,7 @@ logging:
     nl.markpost.weather: DEBUG
 
 jwt:
-  public-key-url: http://authentication-service:12002/api/auth/v1/public-key
+  public-key-url: http://localhost:3000/api/auth/v1/public-key
 
 ---
 # Local environment profile
