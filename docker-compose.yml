@@ -1,18 +1,22 @@
 services:
   weather-redis:
     image: redis:latest
+    container_name: weather-redis
     restart: always
     ports:
       - '13004:6379'
     command: [ "redis-server", "--bind", "0.0.0.0" ]
-    hostname: cache
+    hostname: weather-redis
     volumes:
       - cache:/data
     networks:
-      - default-network
+      default-network:
+        aliases:
+          - weather-redis
 
   weather-postgres:
     image: postgres:latest
+    container_name: weather-postgres
     restart: always
     environment:
       POSTGRES_DB: weather_service
@@ -23,27 +27,35 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
     networks:
-      - default-network
+      default-network:
+        aliases:
+          - weather-postgres
 
   weather-service:
     image: weather-service:latest
+    container_name: weather-service
     restart: always
     build:
       context: ./weather-service
       dockerfile: Dockerfile
     depends_on:
-      - redis
-      - postgres
+      - weather-redis
+      - weather-postgres
     ports:
       - '13001:13001'
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_PROFILES_ACTIVE: prod
     volumes:
       - weather_service_data:/data
     networks:
-      - default-network
+      default-network:
+        aliases:
+          - weather-service
 
-  frontend:
+  weather-frontend:
+    image: weather-frontend:latest
+    container_name: weather-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -53,9 +65,11 @@ services:
     depends_on:
       - weather-service
     environment:
-      NEXT_PUBLIC_WEATHER_API_URL: http://localhost:12001
+      NEXT_PUBLIC_WEATHER_API_URL: http://weather-service:13001
     networks:
-      - default-network
+      default-network:
+        aliases:
+          - weather-frontend
 
 volumes:
   cache:
@@ -68,3 +82,4 @@ volumes:
 networks:
   default-network:
     external: true
+

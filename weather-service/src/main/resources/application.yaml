@@ -66,9 +66,9 @@ spring:
   data:
     redis:
       host: localhost
-      port: 12005
+      port: 13004
   datasource:
-    url: jdbc:postgresql://localhost:12004/weather_service
+    url: jdbc:postgresql://localhost:13003/weather_service
   jpa:
     hibernate:
       ddl-auto: update
@@ -80,12 +80,13 @@ spring:
     default-property-inclusion: non_null
     deserialization:
       fail-on-unknown-properties: false
-weather:
+
+authentication:
   cors:
-    allowed-origin-patterns: "http://localhost:3000"
+    allowed-origin-patterns: http://localhost:3030
 
 jwt:
-  public-key-url: http://localhost:12002/api/auth/v1/public-key
+  public-key-url: http://localhost:3000/api/auth/v1/public-key
 
 ---
 # UT environment profile
