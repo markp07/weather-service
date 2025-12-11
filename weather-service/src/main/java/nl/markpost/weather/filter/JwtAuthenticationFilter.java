@@ -122,7 +122,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       String email = claims.getSubject();
 
       if (email == null) {
-        log.info("JWT claims do not contain email subject");
+        log.warn("JWT claims do not contain email subject");
         throw new UnauthorizedException();
       }
 
@@ -130,10 +130,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         setAuthentication(email, request);
       }
 
-      log.info("Authorized - Validated JWT for user: {}", email);
+      log.debug("Authorized - Validated JWT for user: {}", email);
       filterChain.doFilter(request, response);
+    } catch (UnauthorizedException e) {
+      throw e;
     } catch (Exception e) {
-      log.info("JWT validation failed: {}", e.getMessage());
+      log.error("JWT validation failed: {}", e.getMessage(), e);
       throw new UnauthorizedException();
     }
   }
