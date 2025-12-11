@@ -3,14 +3,14 @@ package nl.markpost.weather.exception;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import lombok.extern.slf4j.Slf4j;
-import nl.markpost.demo.common.exception.BadRequestException;
-import nl.markpost.demo.common.exception.ForbiddenException;
-import nl.markpost.demo.common.exception.GenericException;
-import nl.markpost.demo.common.exception.InternalServerErrorException;
-import nl.markpost.demo.common.exception.NotFoundException;
-import nl.markpost.demo.common.exception.ServiceUnavailableException;
-import nl.markpost.demo.common.exception.TooManyRequestsException;
-import nl.markpost.demo.common.exception.UnauthorizedException;
+import nl.markpost.weather.common.exception.BadRequestException;
+import nl.markpost.weather.common.exception.ForbiddenException;
+import nl.markpost.weather.common.exception.GenericException;
+import nl.markpost.weather.common.exception.InternalServerErrorException;
+import nl.markpost.weather.common.exception.NotFoundException;
+import nl.markpost.weather.common.exception.ServiceUnavailableException;
+import nl.markpost.weather.common.exception.TooManyRequestsException;
+import nl.markpost.weather.common.exception.UnauthorizedException;
 import org.springframework.stereotype.Component;
 
 /**

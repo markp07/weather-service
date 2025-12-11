@@ -19,10 +19,10 @@ public interface CurrentMapper {
    * @return the converted Current model
    */
   @Mapping(target = "time", expression = "java(java.time.LocalDateTime.parse(current.getTime()))")
-  @Mapping(target = "weatherCode", expression = "java(nl.markpost.demo.weather.model.WeatherCode.fromCode(current.getWeather_code()))")
+  @Mapping(target = "weatherCode", expression = "java(nl.markpost.weather.model.WeatherCode.fromCode(current.getWeather_code()))")
   @Mapping(source = "temperature_2m", target = "temperature")
   @Mapping(source = "wind_speed_10m", target = "windSpeed")
-  @Mapping(target = "windDirection", expression = "java(nl.markpost.demo.weather.model.WindDirection.fromDegree(current.getWind_direction_10m()))")
+  @Mapping(target = "windDirection", expression = "java(nl.markpost.weather.model.WindDirection.fromDegree(current.getWind_direction_10m()))")
   Current toCurrent(CurrentResponse current);
 
 }

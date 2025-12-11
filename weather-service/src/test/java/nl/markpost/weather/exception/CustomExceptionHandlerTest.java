@@ -3,9 +3,9 @@ package nl.markpost.weather.exception;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import nl.markpost.demo.common.constant.GenericErrorCodes;
-import nl.markpost.demo.common.exception.GenericException;
-import nl.markpost.demo.common.model.Error;
+import nl.markpost.weather.common.constant.GenericErrorCodes;
+import nl.markpost.weather.common.exception.GenericException;
+import nl.markpost.weather.common.model.Error;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

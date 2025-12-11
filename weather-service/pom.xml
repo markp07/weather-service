@@ -5,22 +5,17 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>nl.markpost.demo</groupId>
-    <artifactId>demo-authentication-parent</artifactId>
+    <groupId>nl.markpost</groupId>
+    <artifactId>weather-parent</artifactId>
     <version>${revision}</version>
   </parent>
 
-  <artifactId>weather</artifactId>
+  <artifactId>weather-service</artifactId>
   <version>${revision}</version>
   <name>Weather Service</name>
-  <description>Authentication demo project - Weather service</description>
+  <description>Weather service application</description>
 
   <dependencies>
-    <dependency>
-      <groupId>nl.markpost.demo</groupId>
-      <artifactId>common</artifactId>
-      <version>${revision}</version>
-    </dependency>
 
     <!-- Spring Boot dependencies -->
     <dependency>
@@ -182,8 +177,8 @@
               <inputSpec>${project.basedir}/src/main/resources/api/weather-api-v1.yaml</inputSpec>
               <generatorName>spring</generatorName>
               <output>${project.build.directory}/generated-sources</output>
-              <apiPackage>nl.markpost.demo.weather.api.v1.controller</apiPackage>
-              <modelPackage>nl.markpost.demo.weather.api.v1.model</modelPackage>
+              <apiPackage>nl.markpost.weather.api.v1.controller</apiPackage>
+              <modelPackage>nl.markpost.weather.api.v1.model</modelPackage>
               <supportingFilesToGenerate>false</supportingFilesToGenerate>
               <configOptions>
                 <title>Weather API</title>
@@ -273,10 +268,12 @@
                 <element>CLASS</element>
                 <excludes>
                   <exclude>*Test</exclude>
-                  <exclude>nl.markpost.demo.weather.client.*</exclude>
-                  <exclude>nl.markpost.demo.weather.config.*</exclude>
-                  <exclude>nl.markpost.demo.weather.constant.*</exclude>
-                  <exclude>nl.markpost.demo.weather.model.*</exclude>
+                  <exclude>nl.markpost.weather.client.*</exclude>
+                  <exclude>nl.markpost.weather.config.*</exclude>
+                  <exclude>nl.markpost.weather.constant.*</exclude>
+                  <exclude>nl.markpost.weather.model.*</exclude>
+                  <exclude>nl.markpost.weather.common.*</exclude>
+                  <exclude>nl.markpost.weather.api.*</exclude>
                   <exclude>nl.markpost.weather.WeatherApplication</exclude>
                 </excludes>
                 <limits>
