@@ -14,12 +14,12 @@ import org.springframework.stereotype.Repository;
 public interface SavedLocationRepository extends JpaRepository<SavedLocation, Long> {
 
   /**
-   * Find all saved locations for a user.
+   * Find all saved locations for a user, ordered by display order.
    *
    * @param userId the user ID
    * @return list of saved locations
    */
-  List<SavedLocation> findByUserId(UUID userId);
+  List<SavedLocation> findByUserIdOrderByDisplayOrderAsc(UUID userId);
 
   /**
    * Find a saved location by user ID and location ID.
@@ -31,10 +31,10 @@ public interface SavedLocationRepository extends JpaRepository<SavedLocation, Lo
   Optional<SavedLocation> findByUserIdAndLocationId(UUID userId, Long locationId);
 
   /**
-   * Delete a saved location by ID and user ID.
+   * Delete a saved location by location ID and user ID.
    *
-   * @param id     the saved location ID
-   * @param userId the user ID
+   * @param locationId the location ID (external geocoding ID)
+   * @param userId     the user ID
    */
-  void deleteByIdAndUserId(Long id, UUID userId);
+  void deleteByLocationIdAndUserId(Long locationId, UUID userId);
 }

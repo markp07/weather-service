@@ -1,6 +1,6 @@
 # Set the base path for the API
 server:
-  port: 12001
+  port: 13001
   servlet:
     context-path: /api/weather
 
@@ -19,11 +19,11 @@ spring:
     type: redis
   data:
     redis:
-      host: redis
-      port: 12005
+      host: weather-redis
+      port: 6379
   datasource:
-    url: jdbc:postgresql://postgres:5432/authentication_service?useUnicode=true&characterEncoding=UTF-8
-    username: authentication_service
+    url: jdbc:postgresql://weather-postgres:5432/weather_service?useUnicode=true&characterEncoding=UTF-8
+    username: weather_service
     password: ${POSTGRES_PASSWORD}
   jpa:
     hibernate:
@@ -45,15 +45,15 @@ security:
 
 authentication:
   cors:
-    allowed-origin-patterns: http://localhost:12006,https://demo.markpost.dev
+    allowed-origin-patterns: http://localhost:3030,https://weather.markpost.dev
 
 logging:
   level:
     root: DEBUG
-    nl.markpost.demo: DEBUG
+    nl.markpost.weather: DEBUG
 
 jwt:
-  public-key-url: http://authentication-service:12002/api/auth/v1/public-key
+  public-key-url: https://auth.markpost.dev/api/auth/v1/public-key
 
 ---
 # Local environment profile
@@ -66,9 +66,9 @@ spring:
   data:
     redis:
       host: localhost
-      port: 12005
+      port: 13004
   datasource:
-    url: jdbc:postgresql://localhost:12004/authentication_service
+    url: jdbc:postgresql://localhost:13003/weather_service
   jpa:
     hibernate:
       ddl-auto: update
@@ -80,12 +80,13 @@ spring:
     default-property-inclusion: non_null
     deserialization:
       fail-on-unknown-properties: false
-weather:
+
+authentication:
   cors:
-    allowed-origin-patterns: "http://localhost:3000"
+    allowed-origin-patterns: http://localhost:3030
 
 jwt:
-  public-key-url: http://localhost:12002/api/auth/v1/public-key
+  public-key-url: http://localhost:3000/api/auth/v1/public-key
 
 ---
 # UT environment profile

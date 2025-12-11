@@ -1,85 +1,107 @@
 services:
-  redis:
+  weather-redis:
     image: redis:latest
+    container_name: weather-redis
     restart: always
     ports:
-      - '12005:6379'
+      - '13004:6379'
     command: [ "redis-server", "--bind", "0.0.0.0" ]
-    hostname: cache
+    hostname: weather-redis
     volumes:
       - cache:/data
     networks:
-      - default-network
+      default-network:
+        aliases:
+          - weather-redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
-  postgres:
+  weather-postgres:
     image: postgres:latest
+    container_name: weather-postgres
     restart: always
     environment:
-      POSTGRES_DB: authentication_service
-      POSTGRES_USER: authentication_service
+      POSTGRES_DB: weather_service
+      POSTGRES_USER: weather_service
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - '12004:5432'
+      - '13003:5432'
     volumes:
       - postgres_data:/var/lib/postgresql
     networks:
-      - default-network
-
-  authentication-service:
-    image: authentication-service:latest
-    restart: always
-    build:
-      context: ./authentication-service
-      dockerfile: Dockerfile
-    depends_on:
-      - redis
-      - postgres
-    ports:
-      - '12002:12002'
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - authentication_service_data:/data
-    networks:
-      - default-network
+      default-network:
+        aliases:
+          - weather-postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U weather_service -d weather_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   weather-service:
     image: weather-service:latest
+    container_name: weather-service
     restart: always
     build:
       context: ./weather-service
       dockerfile: Dockerfile
     depends_on:
-      - redis
-      - postgres
+      weather-redis:
+        condition: service_healthy
+      weather-postgres:
+        condition: service_healthy
     ports:
-      - '12001:12001'
+      - '13001:13001'
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_PROFILES_ACTIVE: prod
     volumes:
       - weather_service_data:/data
     networks:
-      - default-network
+      default-network:
+        aliases:
+          - weather-service
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:13001/api/weather/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
-  frontend:
+  weather-frontend:
+    image: weather-frontend:latest
+    container_name: weather-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "12006:3000"
+      - "13002:3030"
     depends_on:
-      - authentication-service
-      - weather-service
+      weather-service:
+        condition: service_healthy
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:12002
+      NEXT_PUBLIC_WEATHER_API_URL: http://weather-service:13001
     networks:
-      - default-network
+      default-network:
+        aliases:
+          - weather-frontend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3030"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 volumes:
   cache:
     driver: local
   postgres_data:
-    driver: local
-  authentication_service_data:
     driver: local
   weather_service_data:
     driver: local
@@ -87,3 +109,4 @@ volumes:
 networks:
   default-network:
     external: true
+

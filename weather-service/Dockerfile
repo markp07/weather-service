@@ -7,8 +7,8 @@ LABEL maintainer="mark@markpost.nl"
 # Define a volume for temporary files
 VOLUME /tmp
 
-# Expose port 12001 (matches application.yaml)
-EXPOSE 12001
+# Expose port 13001 (matches application.yaml)
+EXPOSE 13001
 
 # Copy the pre-built JAR from the local target directory
 COPY target/weather-*.jar app.jar

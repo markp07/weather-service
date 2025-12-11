@@ -14,8 +14,8 @@ public interface GeocodingClient {
   /**
    * Searches for locations by name.
    *
-   * @param name     the location name to search for
-   * @param count    the maximum number of results to return
+   * @param name the location name to search for
+   * @param count the maximum number of results to return
    * @param language the language for the results
    * @return the geocoding response containing matching locations
    */

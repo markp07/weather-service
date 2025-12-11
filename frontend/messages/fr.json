@@ -1,0 +1,97 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "back": "Retour"
+  },
+  "pageTitle": {
+    "dashboard": "Tableau de Bord Météo"
+  },
+  "sidebar": {
+    "welcome": "Bienvenue, {username}",
+    "dashboard": "Tableau de bord",
+    "profile": "Profil",
+    "security": "Sécurité",
+    "logout": "Déconnexion",
+    "language": "Langue"
+  },
+  "dashboard": {
+    "title": "Tableau de bord météo",
+    "currentLocation": "Position actuelle",
+    "hourlyForecast": "Prévisions horaires",
+    "dailyForecast": "Prévisions sur 14 jours",
+    "now": "Maintenant",
+    "today": "Aujourd'hui",
+    "loadingWeather": "Chargement des données météo...",
+    "locationError": "Impossible d'obtenir la position.",
+    "weatherError": "Échec du chargement de la météo.",
+    "temperature": "Température",
+    "wind": "Vent",
+    "precipitation": "Précipitations",
+    "precipitationProbability": "Probabilité de pluie"
+  },
+  "hourlyGraphModal": {
+    "temperature": "Température",
+    "temperatureUnit": "Température (°C)",
+    "precipitation": "Précipitations",
+    "precipitationUnit": "Précipitations (mm)",
+    "windSpeed": "Vitesse du vent",
+    "windSpeedUnit": "Vitesse du vent (km/h)",
+    "closeModal": "Fermer le modal"
+  },
+  "weather": {
+    "clearSky": "Ciel dégagé",
+    "mainlyClear": "Principalement dégagé",
+    "partlyCloudy": "Partiellement nuageux",
+    "overcast": "Couvert",
+    "fog": "Brouillard",
+    "depositingRimeFog": "Brouillard givrant",
+    "drizzle": "Bruine",
+    "freezingDrizzleLight": "Bruine verglaçante: Légère",
+    "freezingDrizzleDense": "Bruine verglaçante: Dense",
+    "rain": "Pluie",
+    "freezingRainLight": "Pluie verglaçante: Légère",
+    "freezingRainHeavy": "Pluie verglaçante: Forte",
+    "snowSlight": "Chute de neige: Légère",
+    "snowModerate": "Chute de neige: Modérée",
+    "snowHeavy": "Chute de neige: Forte",
+    "snowGrains": "Grains de neige",
+    "rainShowersSlight": "Averses de pluie: Légères",
+    "rainShowersModerate": "Averses de pluie: Modérées",
+    "rainShowersViolent": "Averses de pluie: Violentes",
+    "snowShowersSlight": "Averses de neige: Légères",
+    "snowShowersHeavy": "Averses de neige: Fortes",
+    "thunderstormSlightModerate": "Orage: Léger ou modéré",
+    "thunderstormSlightHail": "Orage avec grêle légère",
+    "thunderstormHeavyHail": "Orage avec forte grêle"
+  },
+  "days": {
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mer",
+    "thu": "Jeu",
+    "fri": "Ven",
+    "sat": "Sam",
+    "sun": "Dim"
+  },
+  "modal": {
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "confirm": "Confirmer"
+  },
+  "languages": {
+    "en": "English",
+    "nl": "Nederlands",
+    "de": "Deutsch",
+    "fr": "Français"
+  }
+}

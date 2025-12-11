@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nl.markpost.weather.common.exception.UnauthorizedException;
+import nl.markpost.weather.common.model.Error;
 import nl.markpost.weather.exception.CustomExceptionHandler;
-import nl.markpost.weather.exception.UnauthorizedException;
-import nl.markpost.weather.model.Error;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -122,7 +122,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       String email = claims.getSubject();
 
       if (email == null) {
-        log.info("JWT claims do not contain email subject");
+        log.warn("JWT claims do not contain email subject");
         throw new UnauthorizedException();
       }
 
@@ -130,10 +130,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         setAuthentication(email, request);
       }
 
-      log.info("Authorized - Validated JWT for user: {}", email);
+      log.debug("Authorized - Validated JWT for user: {}", email);
       filterChain.doFilter(request, response);
+    } catch (UnauthorizedException e) {
+      throw e;
     } catch (Exception e) {
-      log.info("JWT validation failed: {}", e.getMessage());
+      log.error("JWT validation failed: {}", e.getMessage(), e);
       throw new UnauthorizedException();
     }
   }

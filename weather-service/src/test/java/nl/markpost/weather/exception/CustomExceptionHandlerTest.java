@@ -3,13 +3,14 @@ package nl.markpost.weather.exception;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import nl.markpost.weather.constant.GenericErrorCodes;
+import nl.markpost.weather.common.constant.GenericErrorCodes;
+import nl.markpost.weather.common.exception.GenericException;
+import nl.markpost.weather.common.model.Error;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import nl.markpost.weather.model.Error;
 
 class CustomExceptionHandlerTest {
 

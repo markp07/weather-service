@@ -2,26 +2,29 @@
 
 export const isDev = typeof window !== "undefined" && window.location.hostname === "localhost";
 export const AUTH_API_BASE = isDev
-  ? (process.env.NEXT_PUBLIC_API_URL || "http://localhost:12002")
-  : "https://demo.markpost.dev";
+  ? "http://localhost:3000"
+  : "https://auth.markpost.dev";
 export const WEATHER_API_BASE = isDev
   ? (process.env.NEXT_PUBLIC_WEATHER_API_URL || "http://localhost:12001")
-  : "https://demo.markpost.dev";
+  : "https://weather.markpost.dev";
 
 /**
  * Generic fetch utility that retries on 401 by refreshing the token, then retries the original request.
- * If refresh also fails with 401, redirects to login.
+ * If refresh also fails with 401, redirects to auth service login with callback URL.
  */
 export async function fetchWithAuthRetry(input: RequestInfo, init?: RequestInit): Promise<Response> {
   let res = await fetch(input, { ...init, credentials: "include" });
   if (res.status !== 401) return res;
 
-  // Try to refresh token
+  // Try to refresh token from auth service
   const refreshRes = await fetch(`${AUTH_API_BASE}/api/auth/v1/refresh`, { method: "POST", credentials: "include" });
   if (refreshRes.status === 401) {
-    // Redirect to login
+    // Redirect to auth service login with callback URL
     if (typeof window !== "undefined") {
-      window.location.href = "/login";
+      const callbackUrl = isDev
+        ? `http://localhost:3030${window.location.pathname}`
+        : `https://weather.markpost.dev${window.location.pathname}`;
+      window.location.href = `${AUTH_API_BASE}/login?callback=${encodeURIComponent(callbackUrl)}`;
     }
     throw new Error("Session expired. Redirecting to login.");
   }
@@ -62,6 +65,19 @@ export async function deleteSavedLocation(id: number) {
   });
   if (!res.ok && res.status !== 204) {
     throw new Error("Failed to delete saved location");
+  }
+}
+
+export async function reorderSavedLocations(locationIds: number[]) {
+  const res = await fetchWithAuthRetry(`${WEATHER_API_BASE}/api/weather/v1/saved-locations/reorder`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ locationIds }),
+  });
+  if (!res.ok && res.status !== 204) {
+    throw new Error("Failed to reorder saved locations");
   }
 }
 

@@ -2,33 +2,30 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import Modal from "../components/Modal";
-import Login from "../components/Login";
-import Register from "../components/Register";
-import ForgotPassword from "../components/ForgotPassword";
-import ResetPassword from "../components/ResetPassword";
+import { useTranslations } from 'next-intl';
 import Sidebar from "../components/Sidebar";
 import HourlyGraphModal from "../components/HourlyGraphModal";
-import LocationSearch from "../components/LocationSearch";
-import SavedLocations from "../components/SavedLocations";
-import { IconSun, IconWind, IconArrowUp, IconArrowUpLeft, IconArrowUpRight, IconArrowDown, IconArrowDownLeft, IconArrowDownRight, IconArrowRight, IconArrowLeft, IconSearch, IconCurrentLocation, IconX, IconChartHistogram } from "@tabler/icons-react";
+import LocationBar from "../components/LocationBar";
+import LocationEditModal from "../components/LocationEditModal";
+import { IconArrowUp, IconArrowUpLeft, IconArrowUpRight, IconArrowDown, IconArrowDownLeft, IconArrowDownRight, IconArrowRight, IconArrowLeft } from "@tabler/icons-react";
+import { Sun, Crosshair, GraphUp, Wind } from 'react-bootstrap-icons';
 import type { Weather } from "../types/Weather";
 import type { Location } from "../types/Location";
-import { weatherCodeMap } from "../types/WeatherCodeMap";
+import { weatherCodeMap, isNightTime } from "../types/WeatherCodeMap";
+import { fetchWithRetry } from "../utils/retry";
+import { weatherCodeToTranslationKey, dayNumberToTranslationKey } from "../utils/weatherTranslations";
 
 const isDev = typeof window !== "undefined" && window.location.hostname === "localhost";
 const AUTH_API_BASE = isDev
   ? (process.env.NEXT_PUBLIC_API_URL || "http://localhost:12002")
-  : "https://demo.markpost.dev";
+  : "https://auth.markpost.dev";
 const WEATHER_API_BASE = isDev
   ? (process.env.NEXT_PUBLIC_WEATHER_API_URL || "http://localhost:12001")
-  : "https://demo.markpost.dev";
+  : "https://weather.markpost.dev";
 
-function getWeatherIcon(code: string, size = 32) {
-  return weatherCodeMap[code]?.icon(size) || <IconSun size={size} />;
-}
-function getWeatherLabel(code: string) {
-  return weatherCodeMap[code]?.label || code;
+function getWeatherIcon(code: string, size = 32, currentTime?: string, sunRise?: string, sunSet?: string) {
+  const isNight = currentTime && sunRise && sunSet ? isNightTime(currentTime, sunRise, sunSet) : false;
+  return weatherCodeMap[code]?.icon(size, isNight) || <Sun size={size} />;
 }
 function getWindDirectionIcon(direction: string, size = 22) {
   const iconMap: { [key: string]: any } = {
@@ -50,13 +47,11 @@ function getWindDirectionIcon(direction: string, size = 22) {
 
 export default function Home() {
   const router = useRouter();
-  const [modal, setModal] = React.useState<
-    | "login"
-    | "register"
-    | "forgot"
-    | "reset"
-    | null
-  >("login");
+  const t = useTranslations('dashboard');
+  const tCommon = useTranslations('common');
+  const tTitle = useTranslations('pageTitle');
+  const tWeather = useTranslations('weather');
+  const tDays = useTranslations('days');
   const [showWeather, setShowWeather] = React.useState(false);
   const [weatherError, setWeatherError] = React.useState<string | null>(null);
   const [weather, setWeather] = React.useState<Weather | null>(null);
@@ -72,13 +67,14 @@ export default function Home() {
   const [loadingWeather, setLoadingWeather] = React.useState<Set<number>>(new Set());
   
   // UI state
-  const [showLocationSearchModal, setShowLocationSearchModal] = React.useState(false);
+  const [showLocationEditModal, setShowLocationEditModal] = React.useState(false);
   const [selectedLocationId, setSelectedLocationId] = React.useState<number | null>(null); // null = current location
   const [displayWeather, setDisplayWeather] = React.useState<Weather | null>(null);
 
-  // Modal open/close helpers
-  const openModal = (name: typeof modal) => setModal(name);
-  const closeModal = () => setModal(null);
+  // Update document title based on selected language
+  React.useEffect(() => {
+    document.title = tTitle('dashboard');
+  }, [tTitle]);
 
   React.useEffect(() => {
     async function checkLogin() {
@@ -97,15 +93,18 @@ export default function Home() {
           setUsername(data.userName || null);
         } else {
           setUsername(null);
+          // Redirect to login if not authenticated
+          router.push("/login?callback=" + encodeURIComponent("/"));
         }
       } catch {
         setLoggedIn(false);
         setUsername(null);
+        router.push("/login?callback=" + encodeURIComponent("/"));
       }
       setCheckingLogin(false);
     }
     checkLogin();
-  }, []);
+  }, [router]);
 
   React.useEffect(() => {
     async function fetchWeatherWithAuth() {
@@ -124,7 +123,7 @@ export default function Home() {
         }
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
-        const res = await fetch(`${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${lat}&longitude=${lon}`, { credentials: "include" });
+        const res = await fetchWithRetry(`${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${lat}&longitude=${lon}`);
         if (res.status === 401) return "401";
         if (!res.ok) {
           setWeatherError("Failed to load weather.");
@@ -147,7 +146,7 @@ export default function Home() {
         setLoggedIn(false);
         setShowWeather(false);
         setWeather(null);
-        setModal("login");
+        router.push("/login?callback=" + encodeURIComponent("/"));
       }
     }
     if (loggedIn) fetchWeatherWithAuth();
@@ -176,9 +175,8 @@ export default function Home() {
     async function fetchWeatherForLocation(location: Location) {
       setLoadingWeather(prev => new Set(prev).add(location.id));
       try {
-        const res = await fetch(
-          `${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}`,
-          { credentials: "include" }
+        const res = await fetchWithRetry(
+          `${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}`
         );
         if (res.ok) {
           const data: Weather = await res.json();
@@ -235,6 +233,29 @@ export default function Home() {
     }
   };
 
+  const handleReorderLocations = async (locationIds: number[]) => {
+    try {
+      const { reorderSavedLocations } = await import("../utils/api");
+      await reorderSavedLocations(locationIds);
+      // Optimistically update the order
+      const reorderedLocations = locationIds
+        .map(id => savedLocations.find(loc => loc.id === id))
+        .filter((loc): loc is Location => loc !== undefined);
+      setSavedLocations(reorderedLocations);
+    } catch (e) {
+      console.error("Failed to reorder locations:", e);
+      alert("Failed to reorder locations. Please try again.");
+      // Reload locations from server on error
+      try {
+        const { getSavedLocations } = await import("../utils/api");
+        const locations = await getSavedLocations();
+        setSavedLocations(locations);
+      } catch (reloadError) {
+        console.error("Failed to reload locations:", reloadError);
+      }
+    }
+  };
+
   const handleLocationClick = (locationId: number | null) => {
     setSelectedLocationId(locationId);
     if (locationId === null) {
@@ -266,24 +287,22 @@ export default function Home() {
     setLoggedIn(false);
     setShowWeather(false);
     setWeather(null);
-    setModal("login");
+    // Redirect to external auth service
+    const callbackUrl = isDev
+      ? `http://localhost:3030/`
+      : `https://weather.markpost.dev/`;
+    window.location.href = `${AUTH_API_BASE}/login?callback=${encodeURIComponent(callbackUrl)}`;
   }
 
-  function handleNavigate(page: "dashboard" | "profile" | "security") {
-    if (page === "dashboard") {
-      router.push("/");
-    } else if (page === "profile") {
-      router.push("/profile");
-    } else if (page === "security") {
-      router.push("/security");
-    }
+  function handleNavigate(page: "dashboard") {
+    router.push("/");
   }
 
   if (checkingLogin) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen w-full">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-        <div className="text-lg font-semibold text-blue-700">Loading...</div>
+        <div className="text-lg font-semibold text-blue-700">{tCommon('loading')}</div>
       </div>
     );
   }
@@ -314,131 +333,60 @@ export default function Home() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <h2 className="text-2xl sm:text-3xl font-bold">{displayWeather.location}</h2>
-                            {selectedLocationId === null && <IconCurrentLocation size={24} className="text-white" />}
+                            {selectedLocationId === null && <Crosshair size={24} className="text-white" />}
                           </div>
                           <div className="text-5xl sm:text-6xl font-extrabold my-3 sm:my-4">{Math.round(displayWeather.current.temperature)}°C</div>
-                          <div className="text-lg sm:text-xl font-medium opacity-90 mb-2 sm:mb-3">{getWeatherLabel(displayWeather.current.weatherCode)}</div>
+                          <div className="text-lg sm:text-xl font-medium opacity-90 mb-2 sm:mb-3">
+                            {weatherCodeToTranslationKey[displayWeather.current.weatherCode] 
+                              ? tWeather(weatherCodeToTranslationKey[displayWeather.current.weatherCode])
+                              : weatherCodeMap[displayWeather.current.weatherCode]?.label || displayWeather.current.weatherCode}
+                          </div>
                           <div className="flex items-center gap-3 sm:gap-4 text-sm opacity-90">
                             <div className="flex items-center gap-1.5 sm:gap-2">
-                              <IconWind size={18} />
+                              <Wind size={18} />
                               <span>{displayWeather.current.windSpeed} km/h</span>
                               {getWindDirectionIcon(displayWeather.current.windDirection, 18)}
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center justify-center self-stretch">
-                          {getWeatherIcon(displayWeather.current.weatherCode, 160)}
+                          {getWeatherIcon(displayWeather.current.weatherCode, 160, displayWeather.current.time, displayWeather.daily[0]?.sunRise, displayWeather.daily[0]?.sunSet)}
                         </div>
                       </div>
                     </div>
                     {/* Horizontal Scrollable Location Bar */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-2 sm:p-3">
-                      <div className="flex gap-2 overflow-x-auto pb-0 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                        {/* Current Location Card */}
-                        <button
-                          onClick={() => handleLocationClick(null)}
-                          className={`flex-shrink-0 min-w-[120px] p-2 py-1 sm:py-2 rounded-lg transition-all ${
-                            selectedLocationId === null
-                              ? 'bg-blue-500 text-white'
-                              : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-xs font-semibold">{weather.location}</span>
-                            <IconCurrentLocation size={14} />
-                          </div>
-                          {weather && (
-                            <>
-                              <div className="flex items-center justify-between mt-0.5">
-                                <span className="text-base font-bold">{Math.round(weather.current.temperature)}°C</span>
-                                {getWeatherIcon(weather.current.weatherCode, 20)}
-                              </div>
-                            </>
-                          )}
-                        </button>
-
-                      {/* Saved Location Cards */}
-                      {savedLocations.map((location) => {
-                        const locationWeather = savedWeatherData.get(location.id);
-                        const isLoading = loadingWeather.has(location.id);
-                        const isSelected = selectedLocationId === location.id;
-
-                          return (
-                            <div key={location.id} className="flex-shrink-0 min-w-[120px] relative">
-                              <button
-                                onClick={() => handleLocationClick(location.id)}
-                                className={`w-full h-full p-2 py-1 sm:py-2 rounded-lg transition-all ${
-                                  isSelected
-                                    ? 'bg-blue-500 text-white '
-                                    : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                }`}
-                              >
-                                <div className="flex items-start justify-between gap-1 mb-0.5">
-                                  <div className="text-xs text-left font-semibold truncate flex-1 pr-4">{location.name}</div>
-                                </div>
-                                {isLoading ? (
-                                  <div className="flex items-center justify-center h-10">
-                                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-current"></div>
-                                  </div>
-                                ) : locationWeather ? (
-                                  <>
-                                    <div className="flex items-center justify-between mt-0.5">
-                                      <span className="text-base font-bold">{Math.round(locationWeather.current.temperature)}°C</span>
-                                      {getWeatherIcon(locationWeather.current.weatherCode, 20)}
-                                    </div>
-                                  </>
-                                ) : (
-                                  <div className="text-xs opacity-70">No data</div>
-                                )}
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleRemoveLocation(location.id);
-                                  if (selectedLocationId === location.id) {
-                                    handleLocationClick(null);
-                                  }
-                                }}
-                                className="absolute top-1 right-1 flex-shrink-0 hover:bg-red-500 hover:text-white text-gray-600 dark:text-gray-400 p-0.5 rounded transition-colors z-10"
-                                aria-label="Remove location"
-                              >
-                                <IconX size={12} />
-                              </button>
-                            </div>
-                          );
-                        })}
-
-                        {/* Add Location Search Button */}
-                        <button
-                          onClick={() => setShowLocationSearchModal(true)}
-                          className="flex-shrink-0 min-w-[120px] p-2 py-1 sm:py-2 rounded-lg transition-all bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-2 border-dashed border-blue-300"
-                        >
-                          <div className="flex flex-col items-center justify-center h-full gap-1">
-                            <IconSearch size={24} />
-                            <span className="text-xs font-semibold">Add Location</span>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
+                    <LocationBar
+                      currentLocationWeather={weather}
+                      savedLocations={savedLocations}
+                      savedWeatherData={savedWeatherData}
+                      loadingWeather={loadingWeather}
+                      selectedLocationId={selectedLocationId}
+                      onLocationClick={handleLocationClick}
+                      onEditClick={() => setShowLocationEditModal(true)}
+                    />
 
                     {/* Hourly Forecast Card */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-2 sm:p-5 lg:p-6">
                       <div className="flex justify-between items-center mb-2 sm:mb-4">
-                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">Hourly Forecast</h3>
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">{t('hourlyForecast')}</h3>
                         <button
                           onClick={() => setShowHourlyGraph(true)}
                           className="px-4 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm"
                         >
-                          <IconChartHistogram size={20} />
+                          <GraphUp size={20} />
                         </button>
                       </div>
                       <div className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                        {displayWeather.hourly.slice(0, 48).map((h, i) => (
+                        {displayWeather.hourly.slice(0, 48).map((h, i) => {
+                          // Find the corresponding daily data for this hour
+                          const hourDate = new Date(h.time).toDateString();
+                          const dailyData = displayWeather.daily.find(d => new Date(d.time).toDateString() === hourDate);
+                          return (
                           <div key={i} className="flex flex-col items-center min-w-[65px] sm:min-w-[80px] p-2 sm:p-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
                             <div className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 sm:mb-2">
-                              {i === 0 ? "Now" : new Date(h.time).toLocaleTimeString([], { hour: "2-digit", hour12: false })}
+                              {i === 0 ? t('now') : new Date(h.time).toLocaleTimeString([], { hour: "2-digit", hour12: false })}
                             </div>
-                            <div className="mb-1 sm:mb-2">{getWeatherIcon(h.weatherCode, 32)}</div>
+                            <div className="mb-1 sm:mb-2">{getWeatherIcon(h.weatherCode, 32, h.time, dailyData?.sunRise, dailyData?.sunSet)}</div>
                             <div className="font-bold text-base sm:text-lg text-gray-900 dark:text-white">{Math.round(h.temperature)}°</div>
                             <div className="text-[10px] sm:text-xs text-blue-600 dark:text-blue-400 mt-0.5 sm:mt-1">{h.precipitationProbability}%</div>
                             <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">{h.precipitation.toFixed(1)}mm</div>
@@ -447,21 +395,27 @@ export default function Home() {
                               {getWindDirectionIcon(h.windDirection, 12)}
                             </div>
                           </div>
-                        ))}
+                        )})}
                       </div>
                     </div>
 
                     {/* 14-Day Forecast Card */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-2 sm:p-5 lg:p-6">
-                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">14-Day Forecast</h3>
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">{t('dailyForecast')}</h3>
                       <div className="space-y-1 sm:space-y-2">
-                        {displayWeather.daily.slice(0, 14).map((d, i) => (
+                        {displayWeather.daily.slice(0, 14).map((d, i) => {
+                          // For daily forecast, use noon (12:00) to determine day/night
+                          const noonTime = new Date(d.time);
+                          noonTime.setHours(12, 0, 0, 0);
+                          const dayOfWeek = new Date(d.time).getDay();
+                          const dayKey = dayNumberToTranslationKey[dayOfWeek];
+                          return (
                           <div key={i} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div className="flex-1 min-w-0 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                              {i === 0 ? "Today" : new Date(d.time).toLocaleDateString("en-GB", { weekday: "short" })}
+                              {i === 0 ? t('today') : tDays(dayKey)}
                             </div>
                             <div className="flex items-center justify-center w-8 sm:w-10 flex-shrink-0">
-                              {getWeatherIcon(d.weatherCode, 28)}
+                              {getWeatherIcon(d.weatherCode, 28, noonTime.toISOString(), d.sunRise, d.sunSet)}
                             </div>
                             <div className="flex-1 font-bold text-sm sm:text-base text-gray-900 dark:text-white text-right">
                               {Math.round(d.temperatureMax)}°
@@ -480,7 +434,7 @@ export default function Home() {
                               {getWindDirectionIcon(d.windDirection, 14)}
                             </div>
                           </div>
-                        ))}
+                        )})}
                       </div>
                     </div>
                     </>
@@ -496,7 +450,7 @@ export default function Home() {
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
                       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                      <p className="text-gray-600 dark:text-gray-400">Loading weather data...</p>
+                      <p className="text-gray-600 dark:text-gray-400">{t('loadingWeather')}</p>
                     </div>
                   </div>
                 )}
@@ -504,64 +458,33 @@ export default function Home() {
         ) : null}
       </main>
 
-      {/* Modals */}
-      <Modal open={!loggedIn && modal === "login"} onClose={closeModal}>
-        <Login
-          onSuccess={() => {
-            setLoggedIn(true);
-            closeModal();
-          }}
-          onRegister={() => openModal("register")}
-          onForgot={() => openModal("forgot")}
-        />
-      </Modal>
-      <Modal open={modal === "register"} onClose={closeModal}>
-        <Register
-          onSuccess={() => {
-            openModal("login");
-          }}
-          onLogin={() => openModal("login")}
-        />
-      </Modal>
-      <Modal open={modal === "forgot"} onClose={closeModal}>
-        <ForgotPassword
-          onBack={() => openModal("login")}
-          onReset={() => openModal("reset")}
-        />
-      </Modal>
-      <Modal open={modal === "reset"} onClose={closeModal}>
-        <ResetPassword
-          onBack={() => openModal("forgot")}
-          onLogin={() => openModal("login")}
-        />
-      </Modal>
-
       {/* Hourly Graph Modal */}
       {displayWeather && (
         <HourlyGraphModal
           open={showHourlyGraph}
           onClose={() => setShowHourlyGraph(false)}
           hourlyData={displayWeather.hourly}
+          dailyData={displayWeather.daily}
         />
       )}
 
-      {/* Location Search Modal */}
-      <Modal open={showLocationSearchModal} onClose={() => setShowLocationSearchModal(false)}>
-        <div className="p-4">
-          <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Search Location</h2>
-          <LocationSearch
-            weatherApiBase={WEATHER_API_BASE}
-            onLocationSelect={(loc) => {
-              handleLocationSelect(loc);
-              setShowLocationSearchModal(false);
-            }}
-            savedLocations={savedLocations}
-          />
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-            You currently have {savedLocations.length} saved location{savedLocations.length !== 1 ? 's' : ''}.
-          </p>
-        </div>
-      </Modal>
+      {/* Location Edit Modal */}
+      <LocationEditModal
+        open={showLocationEditModal}
+        onClose={() => setShowLocationEditModal(false)}
+        locations={savedLocations}
+        onRemoveLocation={(locationId) => {
+          handleRemoveLocation(locationId);
+          if (selectedLocationId === locationId) {
+            handleLocationClick(null);
+          }
+        }}
+        onReorderLocations={handleReorderLocations}
+        onAddLocation={(loc) => {
+          handleLocationSelect(loc);
+        }}
+        weatherApiBase={WEATHER_API_BASE}
+      />
     </div>
   );
 }

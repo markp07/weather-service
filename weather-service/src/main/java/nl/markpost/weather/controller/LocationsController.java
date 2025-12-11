@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.markpost.weather.api.v1.controller.LocationsApi;
 import nl.markpost.weather.api.v1.model.Location;
+import nl.markpost.weather.api.v1.model.ReorderRequest;
 import nl.markpost.weather.service.LocationsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,7 +69,7 @@ public class LocationsController implements LocationsApi {
   /**
    * Deletes a saved location.
    *
-   * @param id the saved location ID
+   * @param id the location ID (external geocoding ID, passed as id in the API)
    * @return ResponseEntity with no content
    */
   @Override
@@ -76,6 +77,20 @@ public class LocationsController implements LocationsApi {
     UUID userId = getUserIdFromToken();
     log.info("Deleting saved location {} for user: {}", id, userId);
     locationsService.deleteSavedLocation(id, userId);
+    return ResponseEntity.noContent().build();
+  }
+
+  /**
+   * Reorders saved locations for the authenticated user.
+   *
+   * @param reorderRequest the request containing the new order of location IDs
+   * @return ResponseEntity with no content
+   */
+  @Override
+  public ResponseEntity<Void> reorderSavedLocations(ReorderRequest reorderRequest) {
+    UUID userId = getUserIdFromToken();
+    log.info("Reordering locations for user: {}", userId);
+    locationsService.reorderLocations(userId, reorderRequest.getLocationIds());
     return ResponseEntity.noContent().build();
   }
 
