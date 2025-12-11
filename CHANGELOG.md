@@ -5,17 +5,128 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.5] - 2025-11-21
+## [1.6.10] - 2025-12-09
 
 ### Changed
-- Copying the demo-authentication service
-- 
+- chore(github-actions)(deps): bump the github-actions group with 3 updates (#87)
+
+## [1.6.9] - 2025-12-08
+## [1.7.1] - 2025-12-10
+
+### Changed
+- Fix/authentication callback (#91)
+
+## [1.7.0] - 2025-12-10
+
+### Changed
+- Adding multi language support - EN NL DE FR (#90)
+
+## [1.6.11] - 2025-12-10
+
+### Changed
+- feat: configure cookie domain settings for different environments (#89)
+
+
+### Changed
+- chore: update GitHub Actions configuration and add weekly schedule fo… (#86)
+
+## [1.6.8] - 2025-12-08
+
+### Changed
+- chore(npm)(deps): bump the npm-dependencies group (#84)
+
+## [1.6.7] - 2025-12-07
+
+### Changed
+- Refactor location bar UI: uniform widths, text truncation, centralized edit modal, and unlimited locations (#82)
+
+## [1.6.6] - 2025-12-07
+
+### Changed
+- Make sidebar version dynamic from package.json (#83)
+
+## [1.6.5] - 2025-12-07
+
+### Changed
+- Passkey set id null before saving. Try fixing create passkey error
+
+## [1.6.4] - 2025-12-07
+
+### Changed
+- Add retry mechanism with exponential backoff for weather API calls (#81)
+
+## [1.6.3] - 2025-12-07
+
+### Changed
+- Optimize CI build with parallel execution and dependency caching (#80)
+
+## [1.6.2] - 2025-12-07
+
+### Changed
+- Add token validation with exponential backoff retry and open redirect protection (#79)
+
+## [1.6.1] - 2025-12-07
+
+### Changed
+- Add weather icons and swipeable hourly graph with fixed y-axis (#78)
+
+## [1.6.0] - 2025-12-06
+
+### Changed
+- feat: add initial unit tests for profile picture URL generation (#77)
+
+## [1.5.9] - 2025-12-03
+
+### Changed
+- Fix saved location deletion using locationId instead of database id (#76)
+
+## [1.5.8] - 2025-12-02
+
+### Changed
+- Disable vertical scrolling on saved locations bar (#75)
+
+## [1.5.7] - 2025-11-29
+
+### Changed
+- Email verification: frontend URL, from-name config, token display, manual verification UI (#73)
+
+## [1.5.6] - 2025-11-29
+
+### Changed
+- Update date format created date on profile page
+- Fix profile date format, add email verification flow, externalize email config (#71)
+
+## [1.5.5] - 2025-11-25
+
+### Changed
+- Make 24-hour forecast modal responsive for mobile devices and fix modal alignment (#69)
+
+## [1.5.4] - 2025-11-24
+
+### Changed
+- Add weather-themed favicon (#66)
+
+## [1.5.3] - 2025-11-24
+
+### Changed
+- chore(npm)(deps-dev): bump @types/react (#68)
+
+## [1.5.2] - 2025-11-19
+
+### Changed
+- Move authentication flows to dedicated pages with callback URL support (#65)
+
+## [1.5.1] - 2025-11-19
+
+### Changed
+- Add drag-and-drop reordering for saved weather locations (#64)
+
+## [1.5.0] - 2025-11-18
+
+### Changed
+- Migrate weather icons from Tabler to Bootstrap icons (#63)
+
 ## [1.4.4] - 2025-11-18
-## [0.0.2] - 2025-11-21
-
-### Changed
-- Major refactoring of the project Removing authentication service due to project split up Refactoring weather service to be single module project
-
 
 ### Changed
 - Move saved locations from localStorage to database with user linkage (#62)
@@ -114,6 +225,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor authentication flow to use custom DTO for PublicKeyCredentialRequestOptions, excluding null values
 - Add JsonNullableModule to Jackson configuration for better null handling
 
+
 ### Added
 - Dependabot configuration for automated dependency updates (Maven, npm, Docker)
 - Dependabot grouping for streamlined PR management
@@ -124,19 +236,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.0] - 2025-10-11
 
-### Added
-- OpenAPI 3.0 specification for Weather Service (`weather-api-v1.yaml`)
-- OpenAPI Generator Maven plugin configuration for Weather Service
-- Automated code generation for Weather Service controller interfaces and models
-- WeatherModelMapper for converting between domain models and API models
-- Comprehensive API documentation for both Authentication and Weather services
-- Passkey/WebAuthn endpoints to Authentication Service OpenAPI specification for complete API documentation
-
 ### Changed
-- Refactored WeatherController to implement generated WeatherApi interface
-- Updated README.md with OpenAPI documentation and code generation details
-- Enhanced Weather Service with proper API specification and validation
-- Enhanced Authentication Service OpenAPI spec with complete Passkey endpoint documentation
 - Updated all dependency versions to latest stable releases
 - Refactored JWT token parsing to use updated JJWT API
 
