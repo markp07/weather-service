@@ -1,9 +1,9 @@
 services:
-  redis:
+  weather-redis:
     image: redis:latest
     restart: always
     ports:
-      - '12005:6379'
+      - '13004:6379'
     command: [ "redis-server", "--bind", "0.0.0.0" ]
     hostname: cache
     volumes:
@@ -11,42 +11,17 @@ services:
     networks:
       - default-network
 
-  postgres:
+  weather-postgres:
     image: postgres:latest
     restart: always
     environment:
-      POSTGRES_DB: authentication_service
-      POSTGRES_USER: authentication_service
+      POSTGRES_DB: weather_service
+      POSTGRES_USER: weather_service
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - '12004:5432'
+      - '13003:5432'
     volumes:
       - postgres_data:/var/lib/postgresql
-    networks:
-      - default-network
-
-  authentication-service:
-    image: authentication-service:latest
-    restart: always
-    build:
-      context: ./authentication-service
-      dockerfile: Dockerfile
-    depends_on:
-      - redis
-      - postgres
-    ports:
-      - '12002:12002'
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      EMAIL_SERVICE_ENABLED: ${EMAIL_SERVICE_ENABLED:-false}
-      SMTP_HOST: ${SMTP_HOST:-smtp.example.com}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USERNAME: ${SMTP_USERNAME:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      EMAIL_FROM: ${EMAIL_FROM:-no-reply@example.com}
-      EMAIL_BASE_URL: ${EMAIL_BASE_URL:-https://demo.markpost.dev}
-    volumes:
-      - authentication_service_data:/data
     networks:
       - default-network
 
@@ -60,7 +35,7 @@ services:
       - redis
       - postgres
     ports:
-      - '12001:12001'
+      - '13001:13001'
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
@@ -74,12 +49,11 @@ services:
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "12006:3000"
+      - "13002:3030"
     depends_on:
-      - authentication-service
       - weather-service
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:12002
+      NEXT_PUBLIC_WEATHER_API_URL: http://localhost:12001
     networks:
       - default-network
 
@@ -87,8 +61,6 @@ volumes:
   cache:
     driver: local
   postgres_data:
-    driver: local
-  authentication_service_data:
     driver: local
   weather_service_data:
     driver: local

@@ -1,0 +1,82 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "confirm": "Bestätigen",
+    "back": "Zurück"
+  },
+  "pageTitle": {
+    "dashboard": "Wetter Dashboard"
+  },
+  "sidebar": {
+    "welcome": "Willkommen, {username}",
+    "dashboard": "Dashboard",
+    "profile": "Profil",
+    "security": "Sicherheit",
+    "logout": "Abmelden",
+    "language": "Sprache"
+  },
+  "dashboard": {
+    "title": "Wetter Dashboard",
+    "currentLocation": "Aktueller Standort",
+    "hourlyForecast": "Stündliche Vorhersage",
+    "dailyForecast": "14-Tage-Vorhersage",
+    "now": "Jetzt",
+    "today": "Heute",
+    "loadingWeather": "Wetterdaten werden geladen...",
+    "locationError": "Standort konnte nicht abgerufen werden.",
+    "weatherError": "Wetter konnte nicht geladen werden.",
+    "temperature": "Temperatur",
+    "wind": "Wind",
+    "precipitation": "Niederschlag",
+    "precipitationProbability": "Regenwahrscheinlichkeit"
+  },
+  "hourlyGraphModal": {
+    "temperature": "Temperatur",
+    "temperatureUnit": "Temperatur (°C)",
+    "precipitation": "Niederschlag",
+    "precipitationUnit": "Niederschlag (mm)",
+    "windSpeed": "Windgeschwindigkeit",
+    "windSpeedUnit": "Windgeschwindigkeit (km/h)",
+    "closeModal": "Modal schließen"
+  },
+  "weather": {
+    "clear": "Klar",
+    "cloudy": "Bewölkt",
+    "partlyCloudy": "Teilweise bewölkt",
+    "overcast": "Bedeckt",
+    "fog": "Nebel",
+    "drizzle": "Nieselregen",
+    "rain": "Regen",
+    "snow": "Schnee",
+    "thunderstorm": "Gewitter"
+  },
+  "days": {
+    "mon": "Mo",
+    "tue": "Di",
+    "wed": "Mi",
+    "thu": "Do",
+    "fri": "Fr",
+    "sat": "Sa",
+    "sun": "So"
+  },
+  "modal": {
+    "close": "Schließen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "confirm": "Bestätigen"
+  },
+  "languages": {
+    "en": "English",
+    "nl": "Nederlands",
+    "de": "Deutsch",
+    "fr": "Français"
+  }
+}

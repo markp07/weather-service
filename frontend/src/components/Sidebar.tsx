@@ -7,19 +7,29 @@ import LanguageSelector from './LanguageSelector';
 
 interface SidebarProps {
   username: string | null;
-  activePage: "dashboard" | "profile" | "security";
-  onNavigate: (page: "dashboard" | "profile" | "security") => void;
+  activePage: "dashboard";
+  onNavigate: (page: "dashboard") => void;
   onLogout: () => void;
 }
+
+const isDev = typeof window !== "undefined" && window.location.hostname === "localhost";
+const AUTH_BASE = isDev ? "http://localhost:3000" : "https://auth.markpost.dev";
 
 export default function Sidebar({ username, activePage, onNavigate, onLogout }: SidebarProps) {
   const t = useTranslations('sidebar');
   const [isOpen, setIsOpen] = React.useState(false);
 
+  const handleExternalNavigation = (path: string) => {
+    const callbackUrl = isDev
+      ? `http://localhost:3030/`
+      : `https://weather.markpost.dev/`;
+    window.location.href = `${AUTH_BASE}${path}?callback=${encodeURIComponent(callbackUrl)}`;
+  };
+
   const menuItems = [
-    { id: "dashboard" as const, label: t('dashboard'), icon: IconHome },
-    { id: "profile" as const, label: t('profile'), icon: IconUser },
-    { id: "security" as const, label: t('security'), icon: IconShield },
+    { id: "dashboard" as const, label: t('dashboard'), icon: IconHome, action: () => onNavigate("dashboard") },
+    { id: "profile" as const, label: t('profile'), icon: IconUser, action: () => handleExternalNavigation("/profile") },
+    { id: "security" as const, label: t('security'), icon: IconShield, action: () => handleExternalNavigation("/security") },
   ];
 
   return (
@@ -66,7 +76,7 @@ export default function Sidebar({ username, activePage, onNavigate, onLogout }: 
                 <button
                   key={item.id}
                   onClick={() => {
-                    onNavigate(item.id);
+                    item.action();
                     setIsOpen(false);
                   }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${

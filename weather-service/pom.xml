@@ -277,7 +277,7 @@
                   <exclude>nl.markpost.demo.weather.config.*</exclude>
                   <exclude>nl.markpost.demo.weather.constant.*</exclude>
                   <exclude>nl.markpost.demo.weather.model.*</exclude>
-                  <exclude>nl.markpost.demo.weather.WeatherApplication</exclude>
+                  <exclude>nl.markpost.weather.WeatherApplication</exclude>
                 </excludes>
                 <limits>
                   <limit>

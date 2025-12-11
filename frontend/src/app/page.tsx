@@ -287,17 +287,15 @@ export default function Home() {
     setLoggedIn(false);
     setShowWeather(false);
     setWeather(null);
-    router.push("/login");
+    // Redirect to external auth service
+    const callbackUrl = isDev
+      ? `http://localhost:3030/`
+      : `https://weather.markpost.dev/`;
+    window.location.href = `${AUTH_API_BASE}/login?callback=${encodeURIComponent(callbackUrl)}`;
   }
 
-  function handleNavigate(page: "dashboard" | "profile" | "security") {
-    if (page === "dashboard") {
-      router.push("/");
-    } else if (page === "profile") {
-      router.push("/profile");
-    } else if (page === "security") {
-      router.push("/security");
-    }
+  function handleNavigate(page: "dashboard") {
+    router.push("/");
   }
 
   if (checkingLogin) {

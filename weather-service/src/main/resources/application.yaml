@@ -1,6 +1,6 @@
 # Set the base path for the API
 server:
-  port: 12001
+  port: 13001
   servlet:
     context-path: /api/weather
 
@@ -19,11 +19,11 @@ spring:
     type: redis
   data:
     redis:
-      host: redis
-      port: 12005
+      host: weather-redis
+      port: 13004
   datasource:
-    url: jdbc:postgresql://postgres:5432/authentication_service?useUnicode=true&characterEncoding=UTF-8
-    username: authentication_service
+    url: jdbc:postgresql://weather-postgres:13003/weather_service?useUnicode=true&characterEncoding=UTF-8
+    username: weather_service
     password: ${POSTGRES_PASSWORD}
   jpa:
     hibernate:
@@ -45,12 +45,12 @@ security:
 
 authentication:
   cors:
-    allowed-origin-patterns: http://localhost:12006,https://demo.markpost.dev
+    allowed-origin-patterns: http://localhost:12006,https://weather.markpost.dev
 
 logging:
   level:
     root: DEBUG
-    nl.markpost.demo: DEBUG
+    nl.markpost.weather: DEBUG
 
 jwt:
   public-key-url: http://authentication-service:12002/api/auth/v1/public-key
@@ -68,7 +68,7 @@ spring:
       host: localhost
       port: 12005
   datasource:
-    url: jdbc:postgresql://localhost:12004/authentication_service
+    url: jdbc:postgresql://localhost:12004/weather_service
   jpa:
     hibernate:
       ddl-auto: update
