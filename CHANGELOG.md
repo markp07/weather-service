@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix/authentication callback (#91)
 
 ## [1.7.0] - 2025-12-10
+## [1.8.0] - 2025-12-11
+
+### Changed
+- refactor: update README to reflect project name change and enhance feature descriptions
+- feat: enhance weather translations with additional conditions and improve existing terms
+
 
 ### Changed
 - Adding multi language support - EN NL DE FR (#90)
