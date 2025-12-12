@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.2] - 2025-12-12
+
+### Changed
+- chore: update package-lock.json for project name change and dependency version bumps
+
+
 ## [1.8.1] - 2025-12-11
 
 ### Changed
