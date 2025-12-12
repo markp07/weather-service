@@ -45,7 +45,8 @@ security:
 
 authentication:
   cors:
-    allowed-origin-patterns: http://localhost:3030,https://weather.markpost.dev
+    # Configure allowed origins for your frontend application
+    allowed-origin-patterns: http://localhost:3030,https://your-frontend-domain.com
 
 logging:
   level:
@@ -53,7 +54,9 @@ logging:
     nl.markpost.weather: DEBUG
 
 jwt:
-  public-key-url: https://auth.markpost.dev/api/auth/v1/public-key
+  # Configure the URL to your external authentication service's public key endpoint
+  # This service is NOT included in this project - you must provide your own JWT authentication service
+  public-key-url: https://your-auth-service.com/api/auth/v1/public-key
 
 ---
 # Local environment profile
@@ -86,6 +89,7 @@ authentication:
     allowed-origin-patterns: http://localhost:3030
 
 jwt:
+  # For local development - configure to point to your local authentication service
   public-key-url: http://localhost:3000/api/auth/v1/public-key
 
 ---

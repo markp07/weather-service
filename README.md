@@ -1,6 +1,15 @@
 # Weather Service
 
-A modern weather application that provides real-time weather data and forecasts using the Open-Meteo API, with secure JWT authentication and multi-language support.
+[![Build](https://github.com/YOUR_USERNAME/weather-service/actions/workflows/build.yml/badge.svg)](https://github.com/YOUR_USERNAME/weather-service/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.java.net/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.7-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+
+A modern, full-stack weather application that provides real-time weather data and forecasts using the Open-Meteo API, with secure JWT authentication and multi-language support.
+
+> **⚠️ Important:** This project requires an external authentication service for user management and JWT token generation. See [Authentication Requirements](#authentication-requirements) for details.
 
 ## 🌟 Features
 
@@ -81,6 +90,23 @@ weather-service/
     └── package.json
 ```
 
+## ⚠️ Authentication Requirements
+
+**This project requires an external authentication service** that is NOT included in this repository. The authentication service must:
+
+- Generate and validate JWT tokens
+- Expose a public key endpoint at `/api/auth/v1/public-key`
+- Handle user registration, login, logout, and profile management
+- Support token refresh mechanism
+- Provide HTTP-only cookie-based authentication
+
+You need to either:
+1. Implement your own JWT-based authentication service
+2. Use a compatible third-party authentication solution
+3. Adapt an existing authentication system to provide the required endpoints
+
+See the [Security](#-security) section for detailed configuration requirements.
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -90,6 +116,7 @@ weather-service/
 - Docker & Docker Compose
 - PostgreSQL 16 (for local development)
 - Redis 7 (for local development)
+- **External authentication service** (see above)
 
 ### Environment Variables
 
@@ -183,10 +210,20 @@ All weather endpoints require JWT authentication.
 
 ### JWT Authentication
 
-The weather service uses JWT tokens for authentication, validated against an external auth service:
+This weather service requires an **external authentication service** to handle user management and JWT token generation. The service validates JWT tokens using public keys retrieved from the configured authentication service.
 
-- **Production**: `https://auth.markpost.dev/api/auth/v1/public-key`
-- **Local Development**: `http://localhost:3000/api/auth/v1/public-key`
+**Configuration Required:**
+
+Configure the authentication service URL in `application.yaml`:
+
+```yaml
+jwt:
+  public-key-url: http://your-auth-service:port/api/auth/v1/public-key
+```
+
+For local development, the default configuration expects an auth service at `http://localhost:3000`.
+
+**Note:** This project does not include an authentication service. You need to provide your own or use a compatible JWT-based authentication solution.
 
 ### Security Features
 
@@ -199,11 +236,15 @@ The weather service uses JWT tokens for authentication, validated against an ext
 
 ### Authentication Flow
 
-1. User authenticates via external auth service
+1. User authenticates via external auth service (not included)
 2. JWT token stored in HTTP-only cookie
-3. Weather service validates token using public key
+3. Weather service validates token using public key from configured auth service
 4. Token automatically refreshed when needed
 5. On 401, redirect to auth service with callback URL
+
+### Security Policy
+
+See [SECURITY.md](SECURITY.md) for detailed security information and best practices.
 
 ## 🌍 Internationalization
 
@@ -420,7 +461,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Mark Post**
 - GitHub: [@markp07](https://github.com/markp07)
-- Email: mark@markpost.nl
+
+## 📚 Additional Documentation
+
+- [Security Policy](SECURITY.md) - Security best practices and reporting vulnerabilities
+- [Contributing Guidelines](CONTRIBUTING.md) - How to contribute to this project
+- [Versioning](VERSIONING.md) - Semantic versioning and release process
+- [Changelog](CHANGELOG.md) - Version history and changes
 
 ## 🙏 Acknowledgments
 
@@ -429,14 +476,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Next.js team for React framework
 - Vercel for next-intl internationalization library
 
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 ## 📞 Support
 
 For issues and questions:
-- GitHub Issues: https://github.com/markp07/weather-service/issues
-- Email: mark@markpost.nl
+- **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/weather-service/issues)
+- **Security**: See [SECURITY.md](SECURITY.md) for reporting security vulnerabilities
+- **Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines
 
 ---
 
-**Last Updated**: December 2024
-**Version**: 1.7.1
+**Last Updated**: December 12, 2025  
+**Version**: 1.8.2
 
