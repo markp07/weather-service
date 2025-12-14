@@ -52,7 +52,6 @@ function SortableLocationItem({
   onLocationClick,
 }: SortableLocationItemProps) {
   const t = useTranslations('savedLocations');
-  const tLocationModal = useTranslations('locationModal');
   const {
     attributes,
     listeners,
