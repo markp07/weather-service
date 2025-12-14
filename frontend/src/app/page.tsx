@@ -94,12 +94,12 @@ export default function Home() {
         } else {
           setUsername(null);
           // Redirect to login if not authenticated
-          router.push("/login?callback=" + encodeURIComponent("/"));
+          router.push(`${AUTH_API_BASE}/login?callback=${encodeURIComponent("/")}`);
         }
       } catch {
         setLoggedIn(false);
         setUsername(null);
-        router.push("/login?callback=" + encodeURIComponent("/"));
+        router.push(`${AUTH_API_BASE}/login?callback=${encodeURIComponent("/")}`);
       }
       setCheckingLogin(false);
     }
