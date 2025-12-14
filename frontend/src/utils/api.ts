@@ -21,7 +21,7 @@ export async function fetchWithAuthRetry(input: RequestInfo, init?: RequestInit)
   if (refreshRes.status === 401) {
     // Redirect to auth service login with callback URL
     if (typeof window !== "undefined") {
-      const callbackUrl = `${window.location.origin}${window.location.pathname}`;
+      const callbackUrl = `${WEATHER_API_BASE}${window.location.pathname}`;
       window.location.href = `${AUTH_API_BASE}/login?callback=${encodeURIComponent(callbackUrl)}`;
     }
     throw new Error("Session expired. Redirecting to login.");
