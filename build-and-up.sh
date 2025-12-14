@@ -91,7 +91,7 @@ echo "[2/3] Building Docker images..."
 docker compose build
 
 echo "[3/3] Starting all services with docker-compose..."
-docker compose up -d
+docker compose up -d --no-cache
 
 echo ""
 echo "✅ All services are up and running!"
