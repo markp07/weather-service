@@ -62,6 +62,37 @@ A modern, full-stack weather application that provides real-time weather data an
 - **React Bootstrap Icons** for weather icons
 - **DnD Kit** for drag-and-drop location reordering
 
+## 🔌 Downstream APIs
+
+This project integrates with the following external services:
+
+### Weather Data
+- **[Open-Meteo Weather API](https://open-meteo.com/)** - Free weather forecast API
+  - 14-day daily forecasts with temperature, precipitation, and weather codes
+  - 3-day hourly forecasts with detailed conditions
+  - Wind speed, direction, and atmospheric data
+  - No API key required ✨
+
+### Geocoding & Location Services
+- **[Open-Meteo Geocoding API](https://geocoding-api.open-meteo.com/)** - Location search
+  - Search locations by name worldwide
+  - Returns coordinates, country, and administrative regions
+  - No API key required ✨
+
+- **[BigDataCloud Reverse Geocoding API](https://www.bigdatacloud.com/free-api/free-reverse-geocode-to-city-api)** - Coordinate to location
+  - Converts GPS coordinates to location names
+  - Used for "Current Location" feature
+  - Free tier available (no API key needed for basic usage) ✨
+
+### Authentication
+- **[Authentication Service](https://github.com/markp07/authentication-service)** - JWT authentication
+  - User registration, login, and session management
+  - JWT access and refresh token generation
+  - Public key endpoint for token verification
+  - Self-hosted microservice (not a third-party API)
+
+**All external APIs are free to use with no API keys required**, making this project easy to deploy without additional service subscriptions or costs.
+
 ## 📁 Project Structure
 
 ```
