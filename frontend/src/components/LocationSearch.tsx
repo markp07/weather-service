@@ -1,5 +1,6 @@
 import React from "react";
 import { IconSearch, IconX, IconPlus, IconMapPin } from "@tabler/icons-react";
+import { useTranslations } from 'next-intl';
 import type { Location } from "../types/Location";
 
 interface LocationSearchProps {
@@ -9,6 +10,7 @@ interface LocationSearchProps {
 }
 
 export default function LocationSearch({ weatherApiBase, onLocationSelect, savedLocations }: LocationSearchProps) {
+  const t = useTranslations('locationSearch');
   const [searchQuery, setSearchQuery] = React.useState("");
   const [searchResults, setSearchResults] = React.useState<Location[]>([]);
   const [isSearching, setIsSearching] = React.useState(false);
@@ -84,7 +86,7 @@ export default function LocationSearch({ weatherApiBase, onLocationSelect, saved
           type="text"
           value={searchQuery}
           onChange={handleSearchChange}
-          placeholder="Search for a city..."
+          placeholder={t('placeholder')}
           className="w-full px-4 py-3 pl-11 pr-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
           onFocus={() => searchQuery && setShowResults(true)}
         />
@@ -109,7 +111,7 @@ export default function LocationSearch({ weatherApiBase, onLocationSelect, saved
           {isSearching ? (
             <div className="p-4 text-center text-gray-500 dark:text-gray-400">
               <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-              <p className="mt-2 text-sm">Searching...</p>
+              <p className="mt-2 text-sm">{t('searching')}</p>
             </div>
           ) : searchResults.length > 0 ? (
             <ul className="py-2">
@@ -138,7 +140,7 @@ export default function LocationSearch({ weatherApiBase, onLocationSelect, saved
                         </div>
                       </div>
                       {isSaved ? (
-                        <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">Saved</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">{t('saved')}</span>
                       ) : (
                         <IconPlus size={18} className="text-gray-400 flex-shrink-0" />
                       )}
@@ -149,7 +151,7 @@ export default function LocationSearch({ weatherApiBase, onLocationSelect, saved
             </ul>
           ) : (
             <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
-              {searchQuery ? "No locations found" : "Start typing to search"}
+              {searchQuery ? t('noLocationsFound') : t('startTyping')}
             </div>
           )}
         </div>

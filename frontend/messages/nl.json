@@ -93,5 +93,24 @@
     "nl": "Nederlands",
     "de": "Deutsch",
     "fr": "Français"
+  },
+  "locationModal": {
+    "manageLocations": "Locaties beheren",
+    "addNewLocation": "Nieuwe locatie toevoegen",
+    "searchLocation": "Locatie zoeken",
+    "noSavedLocations": "Geen opgeslagen locaties",
+    "savedLocations": "Opgeslagen locaties",
+    "searchAndAdd": "Zoek en voeg locaties toe om hun weer te bekijken",
+    "dragAndDrop": "Sleep locaties om ze te herschikken. Klik op de X om een locatie te verwijderen."
+  },
+  "locationSearch": {
+    "placeholder": "Zoek naar een stad...",
+    "searching": "Zoeken...",
+    "saved": "Opgeslagen",
+    "noLocationsFound": "Geen locaties gevonden",
+    "startTyping": "Begin met typen om te zoeken"
+  },
+  "savedLocations": {
+    "weatherUnavailable": "Weergegevens niet beschikbaar"
   }
 }

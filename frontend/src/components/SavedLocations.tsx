@@ -1,5 +1,6 @@
 import React from "react";
 import { IconX, IconMapPin, IconGripVertical } from "@tabler/icons-react";
+import { useTranslations } from 'next-intl';
 import type { Location } from "../types/Location";
 import type { Weather } from "../types/Weather";
 import { weatherCodeMap, isNightTime } from "../types/WeatherCodeMap";
@@ -50,6 +51,8 @@ function SortableLocationItem({
   onRemoveLocation,
   onLocationClick,
 }: SortableLocationItemProps) {
+  const t = useTranslations('savedLocations');
+  const tLocationModal = useTranslations('locationModal');
   const {
     attributes,
     listeners,
@@ -128,7 +131,7 @@ function SortableLocationItem({
           </div>
         ) : (
           <div className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-            Weather data unavailable
+            {t('weatherUnavailable')}
           </div>
         )}
       </div>
@@ -144,6 +147,7 @@ export default function SavedLocations({
   onLocationClick,
   onReorderLocations,
 }: SavedLocationsProps) {
+  const t = useTranslations('locationModal');
   const [items, setItems] = React.useState(locations);
 
   // Update items when locations prop changes
@@ -182,10 +186,10 @@ export default function SavedLocations({
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
         <IconMapPin size={48} className="mx-auto text-gray-400 mb-3" />
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          No Saved Locations
+          {t('noSavedLocations')}
         </h3>
         <p className="text-gray-600 dark:text-gray-400 text-sm">
-          Search and add locations to view their weather
+          {t('searchAndAdd')}
         </p>
       </div>
     );
@@ -194,7 +198,7 @@ export default function SavedLocations({
   return (
     <div className="space-y-3">
       <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-        Saved Locations ({locations.length})
+        {t('savedLocations')} ({locations.length})
       </h2>
       <DndContext
         sensors={sensors}
