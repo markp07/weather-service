@@ -17,4 +17,3 @@ echo "✅ Redis and PostgreSQL updated successfully!"
 echo ""
 echo "📊 Service Status:"
 docker compose ps weather-redis weather-postgres
-
