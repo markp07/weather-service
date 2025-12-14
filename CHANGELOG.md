@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.4] - 2025-12-14
+
+### Changed
+- chore: update README to include downstream API integrations and authentication details
+- chore: update application.yaml and README for public deployment configuration
+- chore: rename onLocationClick to onAddLocation for consistency and update API base URLs for deployment
+- chore: rename onAddLocation to onLocationClick for clarity
+- chore: rename onAddLocation to onLocationClick for clarity
+- chore: update API base URLs and environment variable configuration for public release
+- chore: fix syntax error in WEATHER_API_BASE declaration and clean up update script
+- chore: update login redirection to use AUTH_API_BASE for consistency
+- chore: update configuration for public release, including environment variables and documentation
+- chore: prepare project for public release by updating configurations and documentation
+
+
 ## [1.8.3] - 2025-12-12
 
 ### Changed
