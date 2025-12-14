@@ -16,17 +16,14 @@ import { fetchWithRetry } from "../utils/retry";
 import { weatherCodeToTranslationKey, dayNumberToTranslationKey } from "../utils/weatherTranslations";
 
 const isDev = typeof window !== "undefined" && window.location.hostname === "localhost";
-const AUTH_API_BASE = isDev
-  ? (process.env.NEXT_PUBLIC_API_URL || "http://localhost:12002")
-  : "https://auth.markpost.dev";
-const WEATHER_API_BASE = isDev
-  ? (process.env.NEXT_PUBLIC_WEATHER_API_URL || "http://localhost:12001")
-  : "https://weather.markpost.dev";
+const AUTH_API_BASE = isDev ? "http://localhost:3000" : process.env.NEXT_PUBLIC_AUTH_API_URL;
+const WEATHER_API_BASE = isDev ? "http://localhost:13001" : process.env.NEXT_PUBLIC_WEATHER_API_URL;
 
 function getWeatherIcon(code: string, size = 32, currentTime?: string, sunRise?: string, sunSet?: string) {
   const isNight = currentTime && sunRise && sunSet ? isNightTime(currentTime, sunRise, sunSet) : false;
   return weatherCodeMap[code]?.icon(size, isNight) || <Sun size={size} />;
 }
+
 function getWindDirectionIcon(direction: string, size = 22) {
   const iconMap: { [key: string]: any } = {
     S: IconArrowUp,
@@ -42,8 +39,6 @@ function getWindDirectionIcon(direction: string, size = 22) {
   const IconComponent = iconMap[direction] || IconArrowUp;
   return <IconComponent size={size} />;
 }
-
-
 
 export default function Home() {
   const router = useRouter();
@@ -94,12 +89,12 @@ export default function Home() {
         } else {
           setUsername(null);
           // Redirect to login if not authenticated
-          router.push("/login?callback=" + encodeURIComponent("/"));
+          router.push(`${AUTH_API_BASE}/login?callback=${encodeURIComponent("/")}`);
         }
       } catch {
         setLoggedIn(false);
         setUsername(null);
-        router.push("/login?callback=" + encodeURIComponent("/"));
+        router.push(`${AUTH_API_BASE}/login?callback=${encodeURIComponent("/")}`);
       }
       setCheckingLogin(false);
     }
@@ -483,7 +478,7 @@ export default function Home() {
         onAddLocation={(loc) => {
           handleLocationSelect(loc);
         }}
-        weatherApiBase={WEATHER_API_BASE}
+        weatherApiBase={WEATHER_API_BASE || "http://localhost:13001"}
       />
     </div>
   );

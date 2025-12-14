@@ -1,12 +1,12 @@
 // Centralized API base URL and fetchWithAuthRetry utility
 
 export const isDev = typeof window !== "undefined" && window.location.hostname === "localhost";
-export const AUTH_API_BASE = isDev
-  ? "http://localhost:3000"
-  : "https://auth.markpost.dev";
-export const WEATHER_API_BASE = isDev
-  ? (process.env.NEXT_PUBLIC_WEATHER_API_URL || "http://localhost:12001")
-  : "https://weather.markpost.dev";
+
+// Configure these URLs based on your deployment
+// NEXT_PUBLIC_AUTH_API_URL should point to your external authentication service
+// NEXT_PUBLIC_WEATHER_API_URL should point to your weather service backend
+export const AUTH_API_BASE = isDev ? "http://localhost:3000" : (process.env.NEXT_PUBLIC_AUTH_API_URL || "https://auth.yourdomain.tld");
+export const WEATHER_API_BASE = isDev ? "http://localhost:13001" : (process.env.NEXT_PUBLIC_WEATHER_API_URL || "https://weather.yourdomain.tld");
 
 /**
  * Generic fetch utility that retries on 401 by refreshing the token, then retries the original request.
@@ -21,9 +21,7 @@ export async function fetchWithAuthRetry(input: RequestInfo, init?: RequestInit)
   if (refreshRes.status === 401) {
     // Redirect to auth service login with callback URL
     if (typeof window !== "undefined") {
-      const callbackUrl = isDev
-        ? `http://localhost:3030${window.location.pathname}`
-        : `https://weather.markpost.dev${window.location.pathname}`;
+      const callbackUrl = `${window.location.origin}${window.location.pathname}`;
       window.location.href = `${AUTH_API_BASE}/login?callback=${encodeURIComponent(callbackUrl)}`;
     }
     throw new Error("Session expired. Redirecting to login.");

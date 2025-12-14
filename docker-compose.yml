@@ -60,6 +60,8 @@ services:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_PROFILES_ACTIVE: prod
+      JWT_PUBLIC_KEY_URL: ${JWT_PUBLIC_KEY_URL:-https://auth.markpost.dev/api/auth/v1/public-key}
+      ALLOWED_ORIGIN_PATTERNS: ${ALLOWED_ORIGIN_PATTERNS:-https://weather.markpost.dev}
     volumes:
       - weather_service_data:/data
     networks:
@@ -79,6 +81,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_AUTH_API_URL: ${NEXT_PUBLIC_AUTH_API_URL:-https://auth.markpost.dev}
+        NEXT_PUBLIC_WEATHER_API_URL: ${NEXT_PUBLIC_WEATHER_API_URL:-https://weather.markpost.dev}
     restart: always
     ports:
       - "13002:3030"
@@ -86,7 +91,8 @@ services:
       weather-service:
         condition: service_healthy
     environment:
-      NEXT_PUBLIC_WEATHER_API_URL: http://weather-service:13001
+      NEXT_PUBLIC_AUTH_API_URL: ${NEXT_PUBLIC_AUTH_API_URL:-https://auth.markpost.dev}
+      NEXT_PUBLIC_WEATHER_API_URL: ${NEXT_PUBLIC_WEATHER_API_URL:-https://weather.markpost.dev}
     networks:
       default-network:
         aliases:

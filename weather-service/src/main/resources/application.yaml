@@ -43,17 +43,20 @@ spring:
 security:
   excluded-paths: /actuator/health,/actuator/info,/actuator/prometheus,/api/weather/actuator/health,/api/weather/actuator/info,/api/weather/actuator/prometheus,/swagger-ui.html,/swagger-ui/**,/*/api-docs
 
-authentication:
+weather:
   cors:
-    allowed-origin-patterns: http://localhost:3030,https://weather.markpost.dev
+    # Configure allowed origins for your frontend application
+    allowed-origin-patterns: ${ALLOWED_ORIGIN_PATTERNS:https://weather.yourdomain.tld}
 
 logging:
   level:
-    root: DEBUG
-    nl.markpost.weather: DEBUG
+    root: INFO
+    nl.markpost.weather: INFO
 
 jwt:
-  public-key-url: https://auth.markpost.dev/api/auth/v1/public-key
+  # Configure the URL to your external authentication service's public key endpoint
+  # This service works with https://github.com/markp07/authentication-service
+  public-key-url: ${JWT_PUBLIC_KEY_URL:https://yourdomain.tld/api/auth/v1/public-key}
 
 ---
 # Local environment profile
@@ -81,12 +84,13 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
 
-authentication:
+weather:
   cors:
-    allowed-origin-patterns: http://localhost:3030
+    allowed-origin-patterns: ${ALLOWED_ORIGIN_PATTERNS:http://localhost:3030}
 
 jwt:
-  public-key-url: http://localhost:3000/api/auth/v1/public-key
+  # For local development - configure to point to your local authentication service
+  public-key-url: ${JWT_PUBLIC_KEY_URL:http://localhost:3000/api/auth/v1/public-key}
 
 ---
 # UT environment profile
