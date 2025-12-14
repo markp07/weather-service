@@ -475,10 +475,9 @@ export default function Home() {
           }
         }}
         onReorderLocations={handleReorderLocations}
-        onAddLocation={(loc) => {
+        onLocationClick={(loc) => {
           handleLocationSelect(loc);
         }}
-        weatherApiBase={WEATHER_API_BASE}
       />
     </div>
   );
