@@ -92,20 +92,31 @@ weather-service/
 
 ## ⚠️ Authentication Requirements
 
-**This project requires an external authentication service** that is NOT included in this repository. The authentication service must:
+**This project is designed to work with the [authentication-service](https://github.com/markp07/authentication-service)**, which provides:
 
-- Generate and validate JWT tokens
-- Expose a public key endpoint at `/api/auth/v1/public-key`
-- Handle user registration, login, logout, and profile management
-- Support token refresh mechanism
-- Provide HTTP-only cookie-based authentication
+- JWT token generation and validation
+- Public key endpoint at `/api/auth/v1/public-key` for token verification
+- User registration, login, logout, and profile management
+- Token refresh mechanism
+- HTTP-only cookie-based authentication
+- Security settings management
 
-You need to either:
-1. Implement your own JWT-based authentication service
-2. Use a compatible third-party authentication solution
-3. Adapt an existing authentication system to provide the required endpoints
+### Setup Options
 
-See the [Security](#-security) section for detailed configuration requirements.
+1. **Use the provided authentication service** (recommended):
+   - Clone and deploy: https://github.com/markp07/authentication-service
+   - Configure the `JWT_PUBLIC_KEY_URL` environment variable to point to your deployed auth service
+   - See the authentication-service README for deployment instructions
+
+2. **Use an alternative JWT-based authentication service**:
+   - Ensure it exposes a public key endpoint in PEM format
+   - Configure JWT tokens with RS256 algorithm
+   - Include `sub` (user email) and `userId` claims in tokens
+
+3. **For local development**:
+   - Run the authentication-service locally on port 3000
+   - Weather service will automatically connect to `http://localhost:3000/api/auth/v1/public-key`
+
 
 ## 🚀 Getting Started
 
@@ -120,9 +131,21 @@ See the [Security](#-security) section for detailed configuration requirements.
 
 ### Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root (see `.env.example` for reference):
+
 ```env
+# Required
 POSTGRES_PASSWORD=your_secure_password
+
+# JWT Configuration (required)
+JWT_PUBLIC_KEY_URL=https://auth.markpost.dev/api/auth/v1/public-key
+
+# CORS Configuration (required)
+ALLOWED_ORIGIN_PATTERNS=https://weather.markpost.dev
+
+# For local development, use:
+# JWT_PUBLIC_KEY_URL=http://localhost:3000/api/auth/v1/public-key
+# ALLOWED_ORIGIN_PATTERNS=http://localhost:3030
 ```
 
 ### Running with Docker Compose
@@ -210,20 +233,27 @@ All weather endpoints require JWT authentication.
 
 ### JWT Authentication
 
-This weather service requires an **external authentication service** to handle user management and JWT token generation. The service validates JWT tokens using public keys retrieved from the configured authentication service.
+This weather service integrates with the [authentication-service](https://github.com/markp07/authentication-service) for user management and JWT token generation. The service validates JWT tokens using public keys retrieved from the configured authentication service.
 
-**Configuration Required:**
+**Configuration:**
 
-Configure the authentication service URL in `application.yaml`:
+Set the authentication service URL via environment variable:
+
+```env
+JWT_PUBLIC_KEY_URL=https://auth.markpost.dev/api/auth/v1/public-key
+```
+
+For local development:
+```env
+JWT_PUBLIC_KEY_URL=http://localhost:3000/api/auth/v1/public-key
+```
+
+The application.yaml uses this environment variable with sensible defaults:
 
 ```yaml
 jwt:
-  public-key-url: http://your-auth-service:port/api/auth/v1/public-key
+  public-key-url: ${JWT_PUBLIC_KEY_URL:https://auth.markpost.dev/api/auth/v1/public-key}
 ```
-
-For local development, the default configuration expects an auth service at `http://localhost:3000`.
-
-**Note:** This project does not include an authentication service. You need to provide your own or use a compatible JWT-based authentication solution.
 
 ### Security Features
 

@@ -14,9 +14,7 @@ interface SidebarProps {
 
 const isDev = typeof window !== "undefined" && window.location.hostname === "localhost";
 // Configure AUTH_BASE to point to your external authentication service
-const AUTH_BASE = isDev
-  ? "http://localhost:3000"
-  : (process.env.NEXT_PUBLIC_AUTH_API_URL || "https://your-auth-service.com");
+const AUTH_BASE = isDev? "http://localhost:3000": process.env.NEXT_PUBLIC_AUTH_API_URL;
 
 export default function Sidebar({ username, activePage, onNavigate, onLogout }: SidebarProps) {
   const t = useTranslations('sidebar');
