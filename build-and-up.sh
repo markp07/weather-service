@@ -1,8 +1,12 @@
 #!/bin/bash
 set -e
 
-# Required environment variables
+# Required environment variables (for backend)
 REQUIRED_VARS=("POSTGRES_PASSWORD" "JWT_PUBLIC_KEY_URL" "ALLOWED_ORIGIN_PATTERNS")
+
+# Optional environment variables (for frontend production deployment)
+# NEXT_PUBLIC_AUTH_API_URL and NEXT_PUBLIC_WEATHER_API_URL are optional
+# Frontend auto-detects localhost in development mode
 
 # Check if .env file exists
 if [ ! -f .env ]; then

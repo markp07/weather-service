@@ -3,8 +3,8 @@
 export const isDev = typeof window !== "undefined" && window.location.hostname === "localhost";
 
 // Configure these URLs based on your deployment
-// AUTH_API_BASE should point to your external authentication service
-// WEATHER_API_BASE should point to your weather service backend
+// NEXT_PUBLIC_AUTH_API_URL should point to your external authentication service
+// NEXT_PUBLIC_WEATHER_API_URL should point to your weather service backend
 export const AUTH_API_BASE = isDev ? "http://localhost:3000" : process.env.NEXT_PUBLIC_AUTH_API_URL;
 export const WEATHER_API_BASE = isDev ? "http://localhost:13001" : process.env.NEXT_PUBLIC_WEATHER_API_URL;
 
