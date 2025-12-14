@@ -46,7 +46,7 @@ security:
 weather:
   cors:
     # Configure allowed origins for your frontend application
-    allowed-origin-patterns: ${ALLOWED_ORIGIN_PATTERNS:https://weather.markpost.dev}
+    allowed-origin-patterns: ${ALLOWED_ORIGIN_PATTERNS:https://weather.yourdomain.tld}
 
 logging:
   level:
@@ -56,7 +56,7 @@ logging:
 jwt:
   # Configure the URL to your external authentication service's public key endpoint
   # This service works with https://github.com/markp07/authentication-service
-  public-key-url: ${JWT_PUBLIC_KEY_URL:https://auth.markpost.dev/api/auth/v1/public-key}
+  public-key-url: ${JWT_PUBLIC_KEY_URL:https://yourdomain.tld/api/auth/v1/public-key}
 
 ---
 # Local environment profile
