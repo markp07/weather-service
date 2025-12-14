@@ -5,8 +5,8 @@ export const isDev = typeof window !== "undefined" && window.location.hostname =
 // Configure these URLs based on your deployment
 // NEXT_PUBLIC_AUTH_API_URL should point to your external authentication service
 // NEXT_PUBLIC_WEATHER_API_URL should point to your weather service backend
-export const AUTH_API_BASE = isDev ? "http://localhost:3000" : process.env.NEXT_PUBLIC_AUTH_API_URL;
-export const WEATHER_API_BASE = isDev ? "http://localhost:13001" : process.env.NEXT_PUBLIC_WEATHER_API_URL;
+export const AUTH_API_BASE = isDev ? "http://localhost:3000" : (process.env.NEXT_PUBLIC_AUTH_API_URL || "https://auth.markpost.dev");
+export const WEATHER_API_BASE = isDev ? "http://localhost:13001" : (process.env.NEXT_PUBLIC_WEATHER_API_URL || "https://weather.markpost.dev");
 
 /**
  * Generic fetch utility that retries on 401 by refreshing the token, then retries the original request.

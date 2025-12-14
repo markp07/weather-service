@@ -478,6 +478,7 @@ export default function Home() {
         onLocationClick={(loc) => {
           handleLocationSelect(loc);
         }}
+        weatherApiBase={WEATHER_API_BASE || "http://localhost:13001"}
       />
     </div>
   );
