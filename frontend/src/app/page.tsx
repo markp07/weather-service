@@ -89,12 +89,12 @@ export default function Home() {
         } else {
           setUsername(null);
           // Redirect to login if not authenticated
-          router.push(`${AUTH_API_BASE}/login?callback=${encodeURIComponent("/")}`);
+          router.push(`${AUTH_API_BASE}/login?callback=${encodeURIComponent(WEATHER_API_BASE ?? "/")}`);
         }
       } catch {
         setLoggedIn(false);
         setUsername(null);
-        router.push(`${AUTH_API_BASE}/login?callback=${encodeURIComponent("/")}`);
+        router.push(`${AUTH_API_BASE}/login?callback=${encodeURIComponent(WEATHER_API_BASE ?? "/")}`);
       }
       setCheckingLogin(false);
     }
@@ -141,7 +141,7 @@ export default function Home() {
         setLoggedIn(false);
         setShowWeather(false);
         setWeather(null);
-        router.push("/login?callback=" + encodeURIComponent("/"));
+        router.push(`${AUTH_API_BASE}/login?callback=${encodeURIComponent(WEATHER_API_BASE ?? "/")}`);
       }
     }
     if (loggedIn) fetchWeatherWithAuth();

@@ -88,10 +88,10 @@ echo "[1/3] Building all Maven modules..."
 mvn clean package -DskipTests
 
 echo "[2/3] Building Docker images..."
-docker compose build
+docker compose build --no-cache
 
 echo "[3/3] Starting all services with docker-compose..."
-docker compose up -d --no-cache
+docker compose up -d
 
 echo ""
 echo "✅ All services are up and running!"
