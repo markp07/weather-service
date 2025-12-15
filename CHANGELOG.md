@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.7] - 2025-12-15
+
+### Changed
+- chore: update build-and-up.sh to use --no-cache for Docker image builds
+
+
 ## [1.8.6] - 2025-12-15
 
 ### Changed
