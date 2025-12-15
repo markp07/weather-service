@@ -1,5 +1,6 @@
 import React from "react";
 import { IconX, IconMapPin, IconGripVertical, IconPlus } from "@tabler/icons-react";
+import { useTranslations } from 'next-intl';
 import Modal from "./Modal";
 import LocationSearch from "./LocationSearch";
 import type { Location } from "../types/Location";
@@ -108,6 +109,7 @@ export default function LocationEditModal({
   onAddLocation,
   weatherApiBase,
 }: LocationEditModalProps) {
+  const t = useTranslations('locationModal');
   const [items, setItems] = React.useState(locations);
   const [showAddLocation, setShowAddLocation] = React.useState(false);
 
@@ -150,7 +152,7 @@ export default function LocationEditModal({
   return (
     <Modal open={open} onClose={onClose}>
       <div className="p-4 max-w-4xl">
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Manage Locations</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">{t('manageLocations')}</h2>
         
         {/* Add Location Section */}
         {!showAddLocation ? (
@@ -159,12 +161,12 @@ export default function LocationEditModal({
             className="w-full mb-6 p-4 rounded-lg transition-all bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-2 border-dashed border-blue-300 flex items-center justify-center gap-2"
           >
             <IconPlus size={20} />
-            <span className="font-semibold">Add New Location</span>
+            <span className="font-semibold">{t('addNewLocation')}</span>
           </button>
         ) : (
           <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Search Location</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('searchLocation')}</h3>
               <button
                 onClick={() => setShowAddLocation(false)}
                 className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
@@ -185,16 +187,16 @@ export default function LocationEditModal({
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center border border-gray-200 dark:border-gray-700">
             <IconMapPin size={48} className="mx-auto text-gray-400 mb-3" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              No Saved Locations
+              {t('noSavedLocations')}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Search and add locations to view their weather
+              {t('searchAndAdd')}
             </p>
           </div>
         ) : (
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-              Saved Locations ({locations.length})
+              {t('savedLocations')} ({locations.length})
             </h3>
             <DndContext
               sensors={sensors}
@@ -220,7 +222,7 @@ export default function LocationEditModal({
         )}
 
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-          Drag and drop locations to reorder them. Click the X button to remove a location.
+          {t('dragAndDrop')}
         </p>
       </div>
     </Modal>

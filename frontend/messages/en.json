@@ -94,5 +94,24 @@
     "nl": "Nederlands",
     "de": "Deutsch",
     "fr": "Français"
+  },
+  "locationModal": {
+    "manageLocations": "Manage Locations",
+    "addNewLocation": "Add New Location",
+    "searchLocation": "Search Location",
+    "noSavedLocations": "No Saved Locations",
+    "savedLocations": "Saved Locations",
+    "searchAndAdd": "Search and add locations to view their weather",
+    "dragAndDrop": "Drag and drop locations to reorder them. Click the X button to remove a location."
+  },
+  "locationSearch": {
+    "placeholder": "Search for a city...",
+    "searching": "Searching...",
+    "saved": "Saved",
+    "noLocationsFound": "No locations found",
+    "startTyping": "Start typing to search"
+  },
+  "savedLocations": {
+    "weatherUnavailable": "Weather data unavailable"
   }
 }
