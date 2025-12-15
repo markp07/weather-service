@@ -13,6 +13,8 @@ jobs:
   build:
     name: Build artifacts and images with docker compose
     runs-on: ubuntu-latest
+    env:
+      LIGHTNING_CSS_FORCE_WASM: '1'
 
     steps:
       - name: Checkout code
@@ -38,7 +40,11 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: |
+          # Ensure lightningcss uses the WASM fallback in CI and is available in node_modules
+          export LIGHTNING_CSS_FORCE_WASM=1
           npm ci
+          # Install wasm fallback into node_modules without changing lockfile
+          npm install --no-audit --no-fund lightningcss-wasm --no-save
           npm run test
           npm run build
 
