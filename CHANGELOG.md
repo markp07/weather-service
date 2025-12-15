@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.6] - 2025-12-15
+
+### Changed
+- Remove unused translation import from SavedLocations component
+- Add missing translations for location management components
+- Initial plan
+
+
 ## [1.8.5] - 2025-12-14
 
 ### Changed
