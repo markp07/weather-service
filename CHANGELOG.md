@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.8] - 2025-12-18
+
+### Changed
+- feat: integrate reverse geocoding API with configuration and client setup
+
+
 ## [1.8.7] - 2025-12-15
 
 ### Changed
