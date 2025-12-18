@@ -46,7 +46,7 @@ services:
   weather-service:
     image: weather-service:latest
     container_name: weather-service
-    restart: always
+    restart: unless-stopped
     build:
       context: ./weather-service
       dockerfile: Dockerfile
@@ -62,6 +62,7 @@ services:
       SPRING_PROFILES_ACTIVE: prod
       JWT_PUBLIC_KEY_URL: ${JWT_PUBLIC_KEY_URL:-https://auth.markpost.dev/api/auth/v1/public-key}
       ALLOWED_ORIGIN_PATTERNS: ${ALLOWED_ORIGIN_PATTERNS:-https://weather.markpost.dev}
+      REVERSE_GEOCODE_API_KEY: ${REVERSE_GEOCODE_API_KEY}
     volumes:
       - weather_service_data:/data
     networks:
@@ -84,7 +85,7 @@ services:
       args:
         NEXT_PUBLIC_AUTH_API_URL: ${NEXT_PUBLIC_AUTH_API_URL:-https://auth.markpost.dev}
         NEXT_PUBLIC_WEATHER_API_URL: ${NEXT_PUBLIC_WEATHER_API_URL:-https://weather.markpost.dev}
-    restart: always
+    restart: unless-stopped
     ports:
       - "13002:3030"
     depends_on:

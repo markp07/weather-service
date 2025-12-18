@@ -58,6 +58,11 @@ jwt:
   # This service works with https://github.com/markp07/authentication-service
   public-key-url: ${JWT_PUBLIC_KEY_URL:https://yourdomain.tld/api/auth/v1/public-key}
 
+reverse-geocode:
+  # Configure the API key for reverse geocoding service (https://api-bdc.io)
+  api-key: ${REVERSE_GEOCODE_API_KEY}
+  url: https://api-bdc.io
+
 ---
 # Local environment profile
 spring:
@@ -91,6 +96,10 @@ weather:
 jwt:
   # For local development - configure to point to your local authentication service
   public-key-url: ${JWT_PUBLIC_KEY_URL:http://localhost:3000/api/auth/v1/public-key}
+
+reverse-geocode:
+  api-key: ${REVERSE_GEOCODE_API_KEY}
+  url: https://api-bdc.io
 
 ---
 # UT environment profile
