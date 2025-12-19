@@ -266,4 +266,18 @@ class LocationsServiceTest {
     verify(geocodingClient).searchLocations(query, 5, "en", "json");
     verifyNoInteractions(geocodingMapper);
   }
+
+  @Test
+  @DisplayName("Should have @Cacheable annotation on searchLocations method")
+  void searchLocations_hasCacheableAnnotation() throws NoSuchMethodException {
+    // Verify that the searchLocations method has the @Cacheable annotation configured correctly
+    java.lang.reflect.Method method = LocationsService.class.getMethod("searchLocations", String.class);
+    org.springframework.cache.annotation.Cacheable cacheable = 
+        method.getAnnotation(org.springframework.cache.annotation.Cacheable.class);
+    
+    assertNotNull(cacheable, "searchLocations method should have @Cacheable annotation");
+    assertEquals(1, cacheable.value().length, "Should have one cache name");
+    assertEquals("searchLocations", cacheable.value()[0], "Cache name should be 'searchLocations'");
+    assertEquals("#name", cacheable.key(), "Cache key should be '#name'");
+  }
 }

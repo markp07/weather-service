@@ -38,6 +38,7 @@ public class LocationsService {
    * @param name the location name to search for
    * @return a list of matching locations
    */
+  @org.springframework.cache.annotation.Cacheable(value = "searchLocations", key = "#name")
   public List<Location> searchLocations(String name) {
     if (name == null || name.trim().isEmpty()) {
       return Collections.emptyList();
