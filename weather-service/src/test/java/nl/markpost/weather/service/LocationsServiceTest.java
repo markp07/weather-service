@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.annotation.Cacheable;
 
 @ExtendWith(MockitoExtension.class)
 class LocationsServiceTest {
@@ -271,9 +273,8 @@ class LocationsServiceTest {
   @DisplayName("Should have @Cacheable annotation on searchLocations method")
   void searchLocations_hasCacheableAnnotation() throws NoSuchMethodException {
     // Verify that the searchLocations method has the @Cacheable annotation configured correctly
-    java.lang.reflect.Method method = LocationsService.class.getMethod("searchLocations", String.class);
-    org.springframework.cache.annotation.Cacheable cacheable = 
-        method.getAnnotation(org.springframework.cache.annotation.Cacheable.class);
+    Method method = LocationsService.class.getMethod("searchLocations", String.class);
+    Cacheable cacheable = method.getAnnotation(Cacheable.class);
     
     assertNotNull(cacheable, "searchLocations method should have @Cacheable annotation");
     assertEquals(1, cacheable.value().length, "Should have one cache name");

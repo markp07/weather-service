@@ -13,6 +13,7 @@ import nl.markpost.weather.mapper.GeocodingMapper;
 import nl.markpost.weather.mapper.SavedLocationMapper;
 import nl.markpost.weather.model.GeocodingResponse;
 import nl.markpost.weather.repository.SavedLocationRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +39,7 @@ public class LocationsService {
    * @param name the location name to search for
    * @return a list of matching locations
    */
-  @org.springframework.cache.annotation.Cacheable(value = "searchLocations", key = "#name")
+  @Cacheable(value = "searchLocations", key = "#name")
   public List<Location> searchLocations(String name) {
     if (name == null || name.trim().isEmpty()) {
       return Collections.emptyList();
