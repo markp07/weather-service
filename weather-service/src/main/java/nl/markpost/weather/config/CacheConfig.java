@@ -38,6 +38,9 @@ public class CacheConfig {
     cacheConfigurations.put("location",
         RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofDays(365)));
 
+    cacheConfigurations.put("searchLocations",
+        RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofDays(30)));
+
     return RedisCacheManager.builder(redisConnectionFactory)
         .withInitialCacheConfigurations(cacheConfigurations)
         .build();
