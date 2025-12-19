@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.9] - 2025-12-19
+
+### Changed
+- Refactor: Use proper imports instead of fully qualified class names
+- Add caching for searchLocations with 30-day TTL
+- Initial plan
+
+
 ## [1.8.8] - 2025-12-18
 
 ### Changed
