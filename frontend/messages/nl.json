@@ -25,8 +25,8 @@
   "dashboard": {
     "title": "Weer Dashboard",
     "currentLocation": "Huidige locatie",
-    "hourlyForecast": "Uurlijkse voorspelling",
-    "dailyForecast": "14-daagse voorspelling",
+    "hourlyForecast": "Verwachting per uur",
+    "dailyForecast": "14-daagse verwachting",
     "now": "Nu",
     "today": "Vandaag",
     "loadingWeather": "Weergegevens laden...",
