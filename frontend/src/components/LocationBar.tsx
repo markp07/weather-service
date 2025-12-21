@@ -86,7 +86,7 @@ export default function LocationBar({
           }`}
         >
           <div className="flex items-center gap-1.5 mb-0.5">
-            <span className="text-xs font-semibold truncate flex-1">{currentLocationWeather?.location}</span>
+            <span className="text-xs text-left font-semibold truncate flex-1">{currentLocationWeather?.location}</span>
             <Crosshair size={14} className="flex-shrink-0" />
           </div>
           {currentLocationWeather && (
