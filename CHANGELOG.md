@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.10] - 2025-12-21
+
+### Changed
+- fix: update Dutch translations and improve text alignment in LocationBar (#17)
+
+
 ## [1.8.9] - 2025-12-19
 
 ### Changed
