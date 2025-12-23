@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.11] - 2025-12-23
+
+### Changed
+- chore(npm)(deps): bump the npm-dependencies group in /frontend with 7 updates (#19)
+
+
 ## [1.8.10] - 2025-12-21
 
 ### Changed
