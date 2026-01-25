@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.14] - 2026-01-25
+
+### Changed
+- chore(npm)(deps): bump the npm-dependencies group across 1 directory with 6 updates (#25)
+
+
 ## [1.8.13] - 2025-12-29
 
 ### Changed
