@@ -16,7 +16,7 @@
   </modules>
 
   <properties>
-    <revision>1.8.14</revision>
+    <revision>1.8.15</revision>
     <java.version>21</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Dependency versions -->
