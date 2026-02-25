@@ -41,6 +41,9 @@ public class CacheConfig {
     cacheConfigurations.put("searchLocations",
         RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofDays(30)));
 
+    cacheConfigurations.put("weatherAlarms",
+        RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(30)));
+
     return RedisCacheManager.builder(redisConnectionFactory)
         .withInitialCacheConfigurations(cacheConfigurations)
         .build();

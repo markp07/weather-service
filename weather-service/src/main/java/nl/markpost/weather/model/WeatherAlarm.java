@@ -1,8 +1,9 @@
 package nl.markpost.weather.model;
 
 /**
- * Weather alarm level based on weather conditions.
- * Represents European-style weather warning levels (comparable to Dutch KNMI code system).
+ * Weather alarm level, comparable to the European/Dutch KNMI warning code system.
+ * Alarm levels are sourced from MeteoAlarm (meteoalarm.org), the official European
+ * weather warning aggregator backed by national meteorological services.
  */
 public enum WeatherAlarm {
 
@@ -12,25 +13,30 @@ public enum WeatherAlarm {
   RED;
 
   /**
-   * Determines the alarm level from a given weather code.
+   * Derives the alarm level from a MeteoAlarm awareness_level string.
+   * Handles both the CAP parameter format (e.g. "2; yellow; Moderate") and plain
+   * color keywords (e.g. "yellow") as found in Atom entry titles.
    *
-   * @param weatherCode the weather code
-   * @return the corresponding alarm level
+   * @param awarenessLevel awareness level string from MeteoAlarm
+   * @return the corresponding WeatherAlarm level
    */
-  public static WeatherAlarm fromWeatherCode(WeatherCode weatherCode) {
-    if (weatherCode == null) {
+  public static WeatherAlarm fromAwarenessLevel(String awarenessLevel) {
+    if (awarenessLevel == null) {
       return GREEN;
     }
-    return switch (weatherCode) {
-      case THUNDERSTORM_SLIGHT_HAIL, THUNDERSTORM_HEAVY_HAIL -> RED;
-      case RAIN_HEAVY, FREEZING_DRIZZLE_DENSE, FREEZING_RAIN_LIGHT, FREEZING_RAIN_HEAVY,
-           SNOW_MODERATE, SNOW_HEAVY, SNOW_GRAINS, RAIN_SHOWERS_VIOLENT,
-           SNOW_SHOWERS_HEAVY, THUNDERSTORM_SLIGHT_MODERATE -> ORANGE;
-      case FOG, DEPOSITING_RIME_FOG, DRIZZLE_MODERATE, DRIZZLE_DENSE, RAIN_SLIGHT,
-           RAIN_MODERATE, SNOW_SLIGHT, RAIN_SHOWERS_SLIGHT, RAIN_SHOWERS_MODERATE,
-           SNOW_SHOWERS_SLIGHT, FREEZING_DRIZZLE_LIGHT -> YELLOW;
-      default -> GREEN;
-    };
+    String lower = awarenessLevel.toLowerCase();
+    // CAP format starts with level number: "4; red; Extreme", "3; orange; Severe", etc.
+    // Also match plain color keywords used in entry titles.
+    if (lower.startsWith("4") || lower.contains("red") || lower.contains("extreme")) {
+      return RED;
+    }
+    if (lower.startsWith("3") || lower.contains("orange") || lower.contains("severe")) {
+      return ORANGE;
+    }
+    if (lower.startsWith("2") || lower.contains("yellow") || lower.contains("moderate")) {
+      return YELLOW;
+    }
+    return GREEN;
   }
 
 }

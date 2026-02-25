@@ -8,57 +8,39 @@ import org.junit.jupiter.api.Test;
 class WeatherAlarmTest {
 
   @Test
-  @DisplayName("Should return GREEN for clear and calm weather codes")
-  void fromWeatherCode_green() {
-    assertEquals(WeatherAlarm.GREEN, WeatherAlarm.fromWeatherCode(WeatherCode.CLEAR_SKY));
-    assertEquals(WeatherAlarm.GREEN, WeatherAlarm.fromWeatherCode(WeatherCode.MAINLY_CLEAR));
-    assertEquals(WeatherAlarm.GREEN, WeatherAlarm.fromWeatherCode(WeatherCode.PARTLY_CLOUDY));
-    assertEquals(WeatherAlarm.GREEN, WeatherAlarm.fromWeatherCode(WeatherCode.OVERCAST));
-    assertEquals(WeatherAlarm.GREEN, WeatherAlarm.fromWeatherCode(WeatherCode.DRIZZLE_LIGHT));
+  @DisplayName("Should return GREEN for null or unrecognised awareness level")
+  void fromAwarenessLevel_green() {
+    assertEquals(WeatherAlarm.GREEN, WeatherAlarm.fromAwarenessLevel(null));
+    assertEquals(WeatherAlarm.GREEN, WeatherAlarm.fromAwarenessLevel("1; green; No warning"));
+    assertEquals(WeatherAlarm.GREEN, WeatherAlarm.fromAwarenessLevel("minor"));
+    assertEquals(WeatherAlarm.GREEN, WeatherAlarm.fromAwarenessLevel("unknown"));
   }
 
   @Test
-  @DisplayName("Should return YELLOW for moderate adverse weather codes")
-  void fromWeatherCode_yellow() {
-    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromWeatherCode(WeatherCode.FOG));
-    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromWeatherCode(WeatherCode.DEPOSITING_RIME_FOG));
-    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromWeatherCode(WeatherCode.DRIZZLE_MODERATE));
-    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromWeatherCode(WeatherCode.DRIZZLE_DENSE));
-    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromWeatherCode(WeatherCode.RAIN_SLIGHT));
-    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromWeatherCode(WeatherCode.RAIN_MODERATE));
-    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromWeatherCode(WeatherCode.SNOW_SLIGHT));
-    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromWeatherCode(WeatherCode.RAIN_SHOWERS_SLIGHT));
-    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromWeatherCode(WeatherCode.RAIN_SHOWERS_MODERATE));
-    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromWeatherCode(WeatherCode.SNOW_SHOWERS_SLIGHT));
-    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromWeatherCode(WeatherCode.FREEZING_DRIZZLE_LIGHT));
+  @DisplayName("Should return YELLOW for CAP format level 2 or yellow/moderate keyword")
+  void fromAwarenessLevel_yellow() {
+    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromAwarenessLevel("2; yellow; Moderate"));
+    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromAwarenessLevel("Yellow warning for Wind"));
+    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromAwarenessLevel("YELLOW"));
+    assertEquals(WeatherAlarm.YELLOW, WeatherAlarm.fromAwarenessLevel("Moderate wind warning"));
   }
 
   @Test
-  @DisplayName("Should return ORANGE for severe weather codes")
-  void fromWeatherCode_orange() {
-    assertEquals(WeatherAlarm.ORANGE, WeatherAlarm.fromWeatherCode(WeatherCode.RAIN_HEAVY));
-    assertEquals(WeatherAlarm.ORANGE, WeatherAlarm.fromWeatherCode(WeatherCode.FREEZING_DRIZZLE_DENSE));
-    assertEquals(WeatherAlarm.ORANGE, WeatherAlarm.fromWeatherCode(WeatherCode.FREEZING_RAIN_LIGHT));
-    assertEquals(WeatherAlarm.ORANGE, WeatherAlarm.fromWeatherCode(WeatherCode.FREEZING_RAIN_HEAVY));
-    assertEquals(WeatherAlarm.ORANGE, WeatherAlarm.fromWeatherCode(WeatherCode.SNOW_MODERATE));
-    assertEquals(WeatherAlarm.ORANGE, WeatherAlarm.fromWeatherCode(WeatherCode.SNOW_HEAVY));
-    assertEquals(WeatherAlarm.ORANGE, WeatherAlarm.fromWeatherCode(WeatherCode.SNOW_GRAINS));
-    assertEquals(WeatherAlarm.ORANGE, WeatherAlarm.fromWeatherCode(WeatherCode.RAIN_SHOWERS_VIOLENT));
-    assertEquals(WeatherAlarm.ORANGE, WeatherAlarm.fromWeatherCode(WeatherCode.SNOW_SHOWERS_HEAVY));
-    assertEquals(WeatherAlarm.ORANGE, WeatherAlarm.fromWeatherCode(WeatherCode.THUNDERSTORM_SLIGHT_MODERATE));
+  @DisplayName("Should return ORANGE for CAP format level 3 or orange/severe keyword")
+  void fromAwarenessLevel_orange() {
+    assertEquals(WeatherAlarm.ORANGE, WeatherAlarm.fromAwarenessLevel("3; orange; Severe"));
+    assertEquals(WeatherAlarm.ORANGE, WeatherAlarm.fromAwarenessLevel("Orange warning for Rain"));
+    assertEquals(WeatherAlarm.ORANGE, WeatherAlarm.fromAwarenessLevel("ORANGE"));
+    assertEquals(WeatherAlarm.ORANGE, WeatherAlarm.fromAwarenessLevel("Severe thunderstorm"));
   }
 
   @Test
-  @DisplayName("Should return RED for extreme weather codes")
-  void fromWeatherCode_red() {
-    assertEquals(WeatherAlarm.RED, WeatherAlarm.fromWeatherCode(WeatherCode.THUNDERSTORM_SLIGHT_HAIL));
-    assertEquals(WeatherAlarm.RED, WeatherAlarm.fromWeatherCode(WeatherCode.THUNDERSTORM_HEAVY_HAIL));
-  }
-
-  @Test
-  @DisplayName("Should return GREEN for null weather code")
-  void fromWeatherCode_null() {
-    assertEquals(WeatherAlarm.GREEN, WeatherAlarm.fromWeatherCode(null));
+  @DisplayName("Should return RED for CAP format level 4 or red/extreme keyword")
+  void fromAwarenessLevel_red() {
+    assertEquals(WeatherAlarm.RED, WeatherAlarm.fromAwarenessLevel("4; red; Extreme"));
+    assertEquals(WeatherAlarm.RED, WeatherAlarm.fromAwarenessLevel("Red warning for Thunderstorm"));
+    assertEquals(WeatherAlarm.RED, WeatherAlarm.fromAwarenessLevel("RED"));
+    assertEquals(WeatherAlarm.RED, WeatherAlarm.fromAwarenessLevel("Extreme wind warning"));
   }
 
 }
