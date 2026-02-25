@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import nl.markpost.weather.api.v1.model.CurrentResponse;
 import nl.markpost.weather.api.v1.model.DailyResponse;
 import nl.markpost.weather.api.v1.model.HourlyResponse;
+import nl.markpost.weather.api.v1.model.WeatherAlarmResponse;
 import nl.markpost.weather.api.v1.model.WeatherCodeResponse;
 import nl.markpost.weather.api.v1.model.WeatherResponse;
 import nl.markpost.weather.api.v1.model.WindDirectionResponse;
@@ -12,6 +13,7 @@ import nl.markpost.weather.model.Current;
 import nl.markpost.weather.model.Daily;
 import nl.markpost.weather.model.Hourly;
 import nl.markpost.weather.model.Weather;
+import nl.markpost.weather.model.WeatherAlarm;
 import nl.markpost.weather.model.WeatherCode;
 import nl.markpost.weather.model.WindDirection;
 import org.mapstruct.Mapper;
@@ -76,6 +78,16 @@ public interface WeatherModelMapper {
       WeatherCode weatherCode) {
     return weatherCode != null
         ? WeatherCodeResponse.fromValue(weatherCode.name()) : null;
+  }
+
+  /**
+   * Converts WeatherAlarm enum to WeatherAlarmResponse enum.
+   *
+   * @param alarm domain enum
+   * @return API enum
+   */
+  default WeatherAlarmResponse map(WeatherAlarm alarm) {
+    return alarm != null ? WeatherAlarmResponse.fromValue(alarm.name()) : null;
   }
 
   /**

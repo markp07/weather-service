@@ -62,7 +62,8 @@ class WeatherControllerTest {
         10.0,
         current,
         List.of(),
-        List.of()
+        List.of(),
+        null
     );
     WeatherResponse apiWeather = new WeatherResponse();
     apiWeather.setLatitude(52.0);

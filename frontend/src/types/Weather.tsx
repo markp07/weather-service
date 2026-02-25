@@ -11,5 +11,6 @@ export interface Weather {
   current: Current;
   daily: Daily[];
   hourly: Hourly[];
+  alarm?: string;
 }
 

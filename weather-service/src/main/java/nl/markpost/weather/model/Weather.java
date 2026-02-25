@@ -26,4 +26,6 @@ public class Weather {
 
   private List<Hourly> hourly;
 
+  private WeatherAlarm alarm;
+
 }

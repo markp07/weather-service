@@ -113,5 +113,11 @@
   },
   "savedLocations": {
     "weatherUnavailable": "Weather data unavailable"
+  },
+  "alarm": {
+    "green": "No weather alarm",
+    "yellow": "Yellow alarm: Possible adverse weather",
+    "orange": "Orange alarm: Significant adverse weather",
+    "red": "Red alarm: Extreme weather warning"
   }
 }

@@ -7,6 +7,7 @@ import Sidebar from "../components/Sidebar";
 import HourlyGraphModal from "../components/HourlyGraphModal";
 import LocationBar from "../components/LocationBar";
 import LocationEditModal from "../components/LocationEditModal";
+import WeatherAlarmBanner from "../components/WeatherAlarmBanner";
 import { IconArrowUp, IconArrowUpLeft, IconArrowUpRight, IconArrowDown, IconArrowDownLeft, IconArrowDownRight, IconArrowRight, IconArrowLeft } from "@tabler/icons-react";
 import { Sun, Crosshair, GraphUp, Wind } from 'react-bootstrap-icons';
 import type { Weather } from "../types/Weather";
@@ -349,6 +350,9 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
+                    {displayWeather.alarm && displayWeather.alarm !== 'GREEN' && (
+                      <WeatherAlarmBanner alarm={displayWeather.alarm} />
+                    )}
                     {/* Horizontal Scrollable Location Bar */}
                     <LocationBar
                       currentLocationWeather={weather}
@@ -412,6 +416,16 @@ export default function Home() {
                             <div className="flex items-center justify-center w-8 sm:w-10 flex-shrink-0">
                               {getWeatherIcon(d.weatherCode, 28, noonTime.toISOString(), d.sunRise, d.sunSet)}
                             </div>
+                            {d.alarm && d.alarm !== 'GREEN' && (
+                              <div
+                                className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                                  d.alarm === 'RED' ? 'bg-red-500' :
+                                  d.alarm === 'ORANGE' ? 'bg-orange-500' :
+                                  'bg-yellow-400'
+                                }`}
+                                title={d.alarm}
+                              />
+                            )}
                             <div className="flex-1 font-bold text-sm sm:text-base text-gray-900 dark:text-white text-right">
                               {Math.round(d.temperatureMax)}°
                             </div>

@@ -30,4 +30,6 @@ public class Daily {
 
   private LocalDateTime sunSet;
 
+  private WeatherAlarm alarm;
+
 }

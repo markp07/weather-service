@@ -112,5 +112,11 @@
   },
   "savedLocations": {
     "weatherUnavailable": "Données météo non disponibles"
+  },
+  "alarm": {
+    "green": "Pas d'alerte météo",
+    "yellow": "Alerte jaune: Météo potentiellement dangereuse",
+    "orange": "Alerte orange: Météo significativement dangereuse",
+    "red": "Alerte rouge: Avertissement météo extrême"
   }
 }

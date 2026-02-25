@@ -9,4 +9,5 @@ export interface Daily {
   windDirection: string;
   sunRise: string;
   sunSet: string;
+  alarm?: string;
 }

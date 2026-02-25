@@ -9,6 +9,7 @@ import nl.markpost.weather.model.Hourly;
 import nl.markpost.weather.model.HourlyResponse;
 import nl.markpost.weather.model.ReverseGeocodeResponse;
 import nl.markpost.weather.model.Weather;
+import nl.markpost.weather.model.WeatherAlarm;
 import nl.markpost.weather.model.WeatherCode;
 import nl.markpost.weather.model.WeatherResponse;
 import nl.markpost.weather.model.WindDirection;
@@ -34,7 +35,8 @@ public interface WeatherMapper {
       @Mapping(target = "current", source = "weather.current"),
       @Mapping(target = "location", source = "location.city"),
       @Mapping(target = "daily", expression = "java(toDailyList(weather.getDaily()))"),
-      @Mapping(target = "hourly", expression = "java(toHourlyList(weather.getHourly()))")
+      @Mapping(target = "hourly", expression = "java(toHourlyList(weather.getHourly()))"),
+      @Mapping(target = "alarm", expression = "java(computeWeatherAlarm(weather))")
   })
   Weather toWeather(WeatherResponse weather, ReverseGeocodeResponse location);
 
@@ -96,9 +98,40 @@ public interface WeatherMapper {
       LocalDateTime sunSet =
           sunSets != null && i < sunSets.size() ? mapToLocalDateTime(sunSets.get(i)) : null;
       result.add(new Daily(time, weatherCode, temperatureMin, temperatureMax, precipitation,
-          precipitationProbabilityMax, windSpeed, windDirection, sunRise, sunSet));
+          precipitationProbabilityMax, windSpeed, windDirection, sunRise, sunSet,
+          WeatherAlarm.fromWeatherCode(weatherCode)));
     }
     return result;
+  }
+
+  /**
+   * Computes the overall weather alarm for the given WeatherResponse, based on the current weather
+   * code and today's daily weather code (taking the highest alarm level).
+   *
+   * @param weather the WeatherResponse to compute the alarm for
+   * @return the highest WeatherAlarm level
+   */
+  default WeatherAlarm computeWeatherAlarm(WeatherResponse weather) {
+    if (weather == null) {
+      return WeatherAlarm.GREEN;
+    }
+    WeatherAlarm alarm = WeatherAlarm.GREEN;
+    if (weather.getCurrent() != null && weather.getCurrent().getWeather_code() != null) {
+      WeatherCode currentCode = WeatherCode.fromCode(weather.getCurrent().getWeather_code());
+      WeatherAlarm currentAlarm = WeatherAlarm.fromWeatherCode(currentCode);
+      if (currentAlarm.ordinal() > alarm.ordinal()) {
+        alarm = currentAlarm;
+      }
+    }
+    if (weather.getDaily() != null && weather.getDaily().getWeather_code() != null
+        && !weather.getDaily().getWeather_code().isEmpty()) {
+      WeatherCode todayCode = WeatherCode.fromCode(weather.getDaily().getWeather_code().get(0));
+      WeatherAlarm todayAlarm = WeatherAlarm.fromWeatherCode(todayCode);
+      if (todayAlarm.ordinal() > alarm.ordinal()) {
+        alarm = todayAlarm;
+      }
+    }
+    return alarm;
   }
 
   /**
