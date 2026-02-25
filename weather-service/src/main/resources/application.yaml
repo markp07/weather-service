@@ -41,7 +41,7 @@ spring:
       fail-on-unknown-properties: false
 
 security:
-  excluded-paths: /actuator/health,/actuator/info,/actuator/prometheus,/api/weather/actuator/health,/api/weather/actuator/info,/api/weather/actuator/prometheus,/swagger-ui.html,/swagger-ui/**,/*/api-docs
+  excluded-paths: /actuator/health,/actuator/info,/actuator/prometheus,/api/weather/actuator/health,/api/weather/actuator/info,/api/weather/actuator/prometheus,/swagger-ui.html,/swagger-ui/**,/*/api-docs,/v1/search
 
 weather:
   cors:
@@ -116,4 +116,4 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
 
 security:
-  excluded-paths: /actuator/health,/actuator/info,/swagger-ui.html,/swagger-ui/**,/*/api-docs,/v1/forecast,/v1/saved-locations
+  excluded-paths: /actuator/health,/actuator/info,/swagger-ui.html,/swagger-ui/**,/*/api-docs,/v1/forecast,/v1/saved-locations,/v1/search
