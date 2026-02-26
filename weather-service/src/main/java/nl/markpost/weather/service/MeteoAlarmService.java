@@ -175,6 +175,13 @@ public class MeteoAlarmService {
     List<MeteoAlarmWarning> regional = warnings.stream()
         .filter(w -> w.getAreaDesc() != null && w.getAreaDesc().toLowerCase().contains(sub))
         .collect(java.util.stream.Collectors.toList());
+    if (regional.isEmpty()) {
+      log.debug("No warnings matched subdivision '{}' — falling back to all {} country warning(s)",
+          subdivision, warnings.size());
+    } else {
+      log.debug("Subdivision filter '{}' narrowed {} warning(s) down to {}", subdivision,
+          warnings.size(), regional.size());
+    }
     return regional.isEmpty() ? warnings : regional;
   }
 
@@ -201,8 +208,12 @@ public class MeteoAlarmService {
             && pointInPolygon(w.getPolygon(), latitude, longitude))
         .collect(java.util.stream.Collectors.toList());
     if (!polygonMatches.isEmpty()) {
+      log.debug("Point-in-polygon matched {}/{} warning(s) for lat={} lon={}",
+          polygonMatches.size(), warnings.size(), latitude, longitude);
       return polygonMatches;
     }
+    log.debug("No polygon matches for lat={} lon={} — using subdivision text-match fallback",
+        latitude, longitude);
     // Second pass: subdivision text-matching (with country-level fallback inside)
     return filterByRegion(warnings, subdivision);
   }
@@ -251,14 +262,21 @@ public class MeteoAlarmService {
     }
     String slug = COUNTRY_SLUGS.get(countryCode.toUpperCase());
     if (slug == null) {
+      log.debug("Country {} is not covered by MeteoAlarm — no slug found", countryCode);
       return Collections.emptyList();
     }
+    String url = BASE_URL + slug;
+    log.info("Fetching MeteoAlarm feed for country {} from {}", countryCode, url);
     try {
-      String xml = restTemplate.getForObject(BASE_URL + slug, String.class);
+      String xml = restTemplate.getForObject(url, String.class);
       if (xml == null || xml.isBlank()) {
+        log.warn("MeteoAlarm feed for country {} returned an empty response", countryCode);
         return Collections.emptyList();
       }
-      return parseAtomFeed(xml);
+      List<MeteoAlarmWarning> warnings = parseAtomFeed(xml);
+      log.info("MeteoAlarm feed for country {} returned {} warning(s)", countryCode,
+          warnings.size());
+      return warnings;
     } catch (Exception e) {
       log.warn("Failed to fetch MeteoAlarm feed for country {}: {}", countryCode, e.getMessage());
       return Collections.emptyList();
@@ -278,32 +296,69 @@ public class MeteoAlarmService {
       Document doc = db.parse(new InputSource(new StringReader(xml)));
 
       NodeList entries = doc.getElementsByTagNameNS(ATOM_NS, "entry");
+      log.info("MeteoAlarm feed contains {} entry(ies)", entries.getLength());
       List<MeteoAlarmWarning> warnings = new ArrayList<>();
 
       for (int i = 0; i < entries.getLength(); i++) {
         Element entry = (Element) entries.item(i);
         String awarenessLevel = extractAwarenessLevel(entry);
+        String awarenessType = parseAwarenessTypeName(extractCapParam(entry, "awareness_type"));
+        String event = extractCapText(entry, "event");
+        String severity = extractCapText(entry, "severity");
+        String certainty = extractCapText(entry, "certainty");
+        String urgency = extractCapText(entry, "urgency");
+        String senderName = extractCapText(entry, "senderName");
+        String headline = extractCapText(entry, "headline");
+        String description = extractCapText(entry, "description");
+        String areaDesc = extractCapText(entry, "areaDesc");
+        String polygon = extractCapText(entry, "polygon");
         OffsetDateTime onset = extractOffsetDateTime(entry, "onset");
         OffsetDateTime expires = extractOffsetDateTime(entry, "expires");
 
-        if (awarenessLevel != null && !awarenessLevel.isBlank()) {
-          warnings.add(MeteoAlarmWarning.builder()
-              .awarenessLevel(awarenessLevel)
-              .awarenessType(parseAwarenessTypeName(extractCapParam(entry, "awareness_type")))
-              .event(extractCapText(entry, "event"))
-              .severity(extractCapText(entry, "severity"))
-              .certainty(extractCapText(entry, "certainty"))
-              .urgency(extractCapText(entry, "urgency"))
-              .senderName(extractCapText(entry, "senderName"))
-              .headline(extractCapText(entry, "headline"))
-              .description(extractCapText(entry, "description"))
-              .areaDesc(extractCapText(entry, "areaDesc"))
-              .polygon(extractCapText(entry, "polygon"))
-              .onset(onset)
-              .expires(expires)
-              .build());
+        log.debug("Entry[{}]: awarenessLevel='{}' awarenessType='{}' event='{}' severity='{}' "
+                + "certainty='{}' urgency='{}' sender='{}' areaDesc='{}' "
+                + "polygon={} onset={} expires={}",
+            i, awarenessLevel, awarenessType, event, severity, certainty, urgency, senderName,
+            areaDesc, polygon != null ? "(present)" : "(absent)", onset, expires);
+
+        if (awarenessLevel == null || awarenessLevel.isBlank()) {
+          log.warn("Entry[{}]: skipping — no awarenessLevel found (headline='{}')", i, headline);
+          continue;
         }
+        if (onset == null) {
+          log.warn("Entry[{}]: onset is missing for warning '{}'", i,
+              headline != null ? headline : awarenessLevel);
+        }
+        if (expires == null) {
+          log.warn("Entry[{}]: expires is missing for warning '{}'", i,
+              headline != null ? headline : awarenessLevel);
+        }
+        if (areaDesc == null) {
+          log.warn("Entry[{}]: areaDesc is missing for warning '{}'", i,
+              headline != null ? headline : awarenessLevel);
+        }
+        if (polygon == null) {
+          log.debug("Entry[{}]: no polygon geometry — will fall back to subdivision text-match",
+              i);
+        }
+
+        warnings.add(MeteoAlarmWarning.builder()
+            .awarenessLevel(awarenessLevel)
+            .awarenessType(awarenessType)
+            .event(event)
+            .severity(severity)
+            .certainty(certainty)
+            .urgency(urgency)
+            .senderName(senderName)
+            .headline(headline)
+            .description(description)
+            .areaDesc(areaDesc)
+            .polygon(polygon)
+            .onset(onset)
+            .expires(expires)
+            .build());
       }
+      log.info("Parsed {} valid warning(s) from MeteoAlarm feed", warnings.size());
       return warnings;
     } catch (Exception e) {
       log.warn("Failed to parse MeteoAlarm Atom feed: {}", e.getMessage());
