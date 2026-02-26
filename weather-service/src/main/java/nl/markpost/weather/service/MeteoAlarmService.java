@@ -95,33 +95,38 @@ public class MeteoAlarmService {
   /**
    * Returns the highest active weather alarm level for the given location, or GREEN if no alarm
    * is active or the country is not covered by MeteoAlarm.
-   * When {@code subdivision} is non-blank, warnings are filtered to those whose area description
-   * contains the subdivision name (e.g. "Noord-Holland"). If no subdivision-specific warnings
-   * exist, all country-level warnings are considered as fallback.
+   * Uses point-in-polygon filtering (preferred) or subdivision text-matching as fallback.
    *
    * @param countryCode ISO 3166-1 alpha-2 country code (e.g. "NL")
+   * @param latitude    user latitude for polygon-based filtering
+   * @param longitude   user longitude for polygon-based filtering
    * @param subdivision principal subdivision / province name (may be null)
    * @return the highest active WeatherAlarm level
    */
-  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + (#subdivision ?: '')")
-  public WeatherAlarm getHighestAlarm(String countryCode, String subdivision) {
-    List<MeteoAlarmWarning> warnings = filterByRegion(fetchWarnings(countryCode), subdivision);
+  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + T(String).format('%.2f', #latitude) + ',' + T(String).format('%.2f', #longitude)")
+  public WeatherAlarm getHighestAlarm(String countryCode, double latitude, double longitude,
+      String subdivision) {
+    List<MeteoAlarmWarning> warnings = filterForLocation(fetchWarnings(countryCode), latitude,
+        longitude, subdivision);
     return resolveHighestActive(warnings, OffsetDateTime.now(ZoneOffset.UTC));
   }
 
   /**
    * Returns a list of active warnings for each daily entry date, or null when no alarm is active
-   * on a given day. When {@code subdivision} is non-blank, warnings are narrowed to the region.
+   * on a given day. Uses point-in-polygon filtering (preferred) or subdivision text-matching.
    *
    * @param countryCode ISO 3166-1 alpha-2 country code
+   * @param latitude    user latitude for polygon-based filtering
+   * @param longitude   user longitude for polygon-based filtering
    * @param subdivision principal subdivision / province name (may be null)
    * @param dates       list of daily dates to check alarms for
    * @return list of WeatherAlarm levels (same size as dates), null entries where no alarm is active
    */
-  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + (#subdivision ?: '') + '-daily'")
-  public List<WeatherAlarm> getDailyAlarms(String countryCode, String subdivision,
-      List<LocalDate> dates) {
-    List<MeteoAlarmWarning> warnings = filterByRegion(fetchWarnings(countryCode), subdivision);
+  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + T(String).format('%.2f', #latitude) + ',' + T(String).format('%.2f', #longitude) + '-daily'")
+  public List<WeatherAlarm> getDailyAlarms(String countryCode, double latitude, double longitude,
+      String subdivision, List<LocalDate> dates) {
+    List<MeteoAlarmWarning> warnings = filterForLocation(fetchWarnings(countryCode), latitude,
+        longitude, subdivision);
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
     List<WeatherAlarm> result = new ArrayList<>();
     for (LocalDate date : dates) {
@@ -132,16 +137,20 @@ public class MeteoAlarmService {
 
   /**
    * Returns all currently active warning objects for the given location.
-   * When {@code subdivision} is non-blank, warnings are narrowed to the region.
+   * Uses point-in-polygon filtering (preferred) or subdivision text-matching.
    * Returns an empty list when the country is not covered by MeteoAlarm or no alarms are active.
    *
    * @param countryCode ISO 3166-1 alpha-2 country code
+   * @param latitude    user latitude for polygon-based filtering
+   * @param longitude   user longitude for polygon-based filtering
    * @param subdivision principal subdivision / province name (may be null)
    * @return list of currently active MeteoAlarmWarning objects
    */
-  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + (#subdivision ?: '') + '-active'")
-  public List<MeteoAlarmWarning> getActiveWarnings(String countryCode, String subdivision) {
-    List<MeteoAlarmWarning> warnings = filterByRegion(fetchWarnings(countryCode), subdivision);
+  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + T(String).format('%.2f', #latitude) + ',' + T(String).format('%.2f', #longitude) + '-active'")
+  public List<MeteoAlarmWarning> getActiveWarnings(String countryCode, double latitude,
+      double longitude, String subdivision) {
+    List<MeteoAlarmWarning> warnings = filterForLocation(fetchWarnings(countryCode), latitude,
+        longitude, subdivision);
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
     List<MeteoAlarmWarning> active = new ArrayList<>();
     for (MeteoAlarmWarning warning : warnings) {
@@ -167,6 +176,69 @@ public class MeteoAlarmService {
         .filter(w -> w.getAreaDesc() != null && w.getAreaDesc().toLowerCase().contains(sub))
         .collect(java.util.stream.Collectors.toList());
     return regional.isEmpty() ? warnings : regional;
+  }
+
+  /**
+   * Filters warnings to the most specific geographic match possible.
+   * <p>
+   * Priority:
+   * <ol>
+   *   <li>Point-in-polygon: if any warnings carry a CAP {@code <polygon>}, check whether
+   *       the user's latitude/longitude falls inside — return all polygon matches.</li>
+   *   <li>Subdivision text-match: if no polygon matches (or no polygons available), delegate to
+   *       {@link #filterByRegion} which checks {@code areaDesc} against the subdivision name.
+   *       That method already falls back to all country-level warnings when there is no match.</li>
+   * </ol>
+   */
+  List<MeteoAlarmWarning> filterForLocation(List<MeteoAlarmWarning> warnings, double latitude,
+      double longitude, String subdivision) {
+    if (warnings.isEmpty()) {
+      return warnings;
+    }
+    // First pass: polygon-based point-in-polygon check
+    List<MeteoAlarmWarning> polygonMatches = warnings.stream()
+        .filter(w -> w.getPolygon() != null && !w.getPolygon().isBlank()
+            && pointInPolygon(w.getPolygon(), latitude, longitude))
+        .collect(java.util.stream.Collectors.toList());
+    if (!polygonMatches.isEmpty()) {
+      return polygonMatches;
+    }
+    // Second pass: subdivision text-matching (with country-level fallback inside)
+    return filterByRegion(warnings, subdivision);
+  }
+
+  /**
+   * Checks whether a geographic point ({@code lat}, {@code lon}) lies inside a polygon defined
+   * by a space-separated list of {@code "lat,lon"} coordinate pairs (CAP standard format).
+   * Uses the ray-casting algorithm.
+   */
+  private boolean pointInPolygon(String polygon, double lat, double lon) {
+    try {
+      String[] points = polygon.trim().split("\\s+");
+      int n = points.length;
+      if (n < 3) {
+        return false;
+      }
+      double[] lats = new double[n];
+      double[] lons = new double[n];
+      for (int i = 0; i < n; i++) {
+        String[] parts = points[i].split(",");
+        lats[i] = Double.parseDouble(parts[0].trim());
+        lons[i] = Double.parseDouble(parts[1].trim());
+      }
+      // Ray-casting: count edge crossings for a horizontal ray eastward from (lat, lon)
+      boolean inside = false;
+      for (int i = 0, j = n - 1; i < n; j = i++) {
+        if ((lons[i] > lon) != (lons[j] > lon)
+            && lat < (lats[j] - lats[i]) * (lon - lons[i]) / (lons[j] - lons[i]) + lats[i]) {
+          inside = !inside;
+        }
+      }
+      return inside;
+    } catch (Exception e) {
+      log.debug("Failed to evaluate polygon for point-in-polygon check: {}", e.getMessage());
+      return false;
+    }
   }
 
   /**
@@ -218,9 +290,15 @@ public class MeteoAlarmService {
           warnings.add(MeteoAlarmWarning.builder()
               .awarenessLevel(awarenessLevel)
               .awarenessType(parseAwarenessTypeName(extractCapParam(entry, "awareness_type")))
+              .event(extractCapText(entry, "event"))
+              .severity(extractCapText(entry, "severity"))
+              .certainty(extractCapText(entry, "certainty"))
+              .urgency(extractCapText(entry, "urgency"))
+              .senderName(extractCapText(entry, "senderName"))
               .headline(extractCapText(entry, "headline"))
               .description(extractCapText(entry, "description"))
               .areaDesc(extractCapText(entry, "areaDesc"))
+              .polygon(extractCapText(entry, "polygon"))
               .onset(onset)
               .expires(expires)
               .build());

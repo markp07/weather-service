@@ -26,6 +26,31 @@ public class MeteoAlarmWarning {
   private String awarenessType;
 
   /**
+   * CAP event name (e.g. "Wind", "Thunderstorm") from {@code <cap:event>}.
+   */
+  private String event;
+
+  /**
+   * CAP severity (e.g. "Severe", "Extreme") from {@code <cap:severity>}.
+   */
+  private String severity;
+
+  /**
+   * CAP certainty (e.g. "Likely", "Observed") from {@code <cap:certainty>}.
+   */
+  private String certainty;
+
+  /**
+   * CAP urgency (e.g. "Immediate", "Expected") from {@code <cap:urgency>}.
+   */
+  private String urgency;
+
+  /**
+   * Name of the issuing national meteorological service from {@code <cap:senderName>}.
+   */
+  private String senderName;
+
+  /**
    * Short headline from the CAP alert (e.g. "Orange warning for Wind").
    */
   private String headline;
@@ -39,6 +64,12 @@ public class MeteoAlarmWarning {
    * Area description from the CAP alert (e.g. "Netherlands: Noord-Holland").
    */
   private String areaDesc;
+
+  /**
+   * CAP polygon as a space-separated list of "lat,lon" coordinate pairs defining the
+   * geographic area covered by this warning. Null when not present in the feed.
+   */
+  private String polygon;
 
   /**
    * Warning onset time (null when not available in the Atom entry).

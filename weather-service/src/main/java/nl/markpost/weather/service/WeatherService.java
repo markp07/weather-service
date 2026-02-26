@@ -55,17 +55,21 @@ public class WeatherService {
       return;
     }
     String countryCode = location.getCountryCode();
+    double latitude = location.getLatitude();
+    double longitude = location.getLongitude();
     String subdivision = location.getPrincipalSubdivision();
-    WeatherAlarm overallAlarm = meteoAlarmService.getHighestAlarm(countryCode, subdivision);
+    WeatherAlarm overallAlarm = meteoAlarmService.getHighestAlarm(countryCode, latitude, longitude,
+        subdivision);
     weather.setAlarm(overallAlarm);
-    weather.setAlarmWarnings(meteoAlarmService.getActiveWarnings(countryCode, subdivision));
+    weather.setAlarmWarnings(
+        meteoAlarmService.getActiveWarnings(countryCode, latitude, longitude, subdivision));
 
     if (weather.getDaily() != null && !weather.getDaily().isEmpty()) {
       List<LocalDate> dates = weather.getDaily().stream()
           .map(d -> d.getTime() != null ? d.getTime().toLocalDate() : null)
           .collect(Collectors.toList());
-      List<WeatherAlarm> dailyAlarms = meteoAlarmService.getDailyAlarms(countryCode, subdivision,
-          dates);
+      List<WeatherAlarm> dailyAlarms = meteoAlarmService.getDailyAlarms(countryCode, latitude,
+          longitude, subdivision, dates);
       List<Daily> dailyList = weather.getDaily();
       for (int i = 0; i < dailyList.size() && i < dailyAlarms.size(); i++) {
         dailyList.get(i).setAlarm(dailyAlarms.get(i));

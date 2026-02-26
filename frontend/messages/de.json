@@ -123,6 +123,10 @@
   "alarmModal": {
     "close": "Schließen",
     "noDetails": "Keine Warnungsdetails verfügbar.",
-    "source": "Quelle: MeteoAlarm — Offizielle europäische Wetterwarnungsdienst"
+    "source": "Quelle: MeteoAlarm — Offizielle europäische Wetterwarnungsdienst",
+    "severity": "Schwere",
+    "certainty": "Wahrscheinlichkeit",
+    "urgency": "Dringlichkeit",
+    "issuedBy": "Herausgegeben von"
   }
 }

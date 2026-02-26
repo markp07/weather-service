@@ -4,7 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -89,16 +92,16 @@ class WeatherServiceTest {
     when(openMeteoClient.getWeatherHourly(latitude, longitude)).thenReturn(weatherResponse);
     when(reverseGeocodeClient.getLocation(latitude, longitude)).thenReturn(location);
     when(weatherMapper.toWeather(weatherResponse, location)).thenReturn(weather);
-    when(meteoAlarmService.getHighestAlarm("NL", null)).thenReturn(WeatherAlarm.YELLOW);
-    when(meteoAlarmService.getActiveWarnings("NL", null)).thenReturn(Collections.emptyList());
-    when(meteoAlarmService.getDailyAlarms(anyString(), any(), any())).thenReturn(
+    when(meteoAlarmService.getHighestAlarm(eq("NL"), anyDouble(), anyDouble(), isNull())).thenReturn(WeatherAlarm.YELLOW);
+    when(meteoAlarmService.getActiveWarnings(eq("NL"), anyDouble(), anyDouble(), isNull())).thenReturn(Collections.emptyList());
+    when(meteoAlarmService.getDailyAlarms(anyString(), anyDouble(), anyDouble(), any(), any())).thenReturn(
         Collections.singletonList(WeatherAlarm.YELLOW));
 
     Weather result = weatherService.getWeather(latitude, longitude);
 
     assertEquals(WeatherAlarm.YELLOW, result.getAlarm());
     assertEquals(WeatherAlarm.YELLOW, result.getDaily().get(0).getAlarm());
-    verify(meteoAlarmService).getHighestAlarm("NL", null);
+    verify(meteoAlarmService).getHighestAlarm(eq("NL"), anyDouble(), anyDouble(), isNull());
   }
 
   @Test
@@ -117,7 +120,7 @@ class WeatherServiceTest {
     Weather result = weatherService.getWeather(latitude, longitude);
 
     assertSame(expectedWeather, result);
-    verify(meteoAlarmService, never()).getHighestAlarm(anyString(), any());
+    verify(meteoAlarmService, never()).getHighestAlarm(anyString(), anyDouble(), anyDouble(), any());
   }
 
   @Test

@@ -38,17 +38,28 @@ class MeteoAlarmServiceTest {
   }
 
   @Test
-  @DisplayName("parseAtomFeed extracts awareness_level from embedded CAP parameters")
-  void parseAtomFeed_capParameters() {
+  @DisplayName("parseAtomFeed extracts all CAP fields including new ones")
+  void parseAtomFeed_allCapFields() {
     String xml = """
         <?xml version="1.0" encoding="UTF-8"?>
         <feed xmlns="http://www.w3.org/2005/Atom">
           <entry>
             <title>Weather warning</title>
             <alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+              <senderName xmlns="urn:oasis:names:tc:emergency:cap:1.2">KNMI</senderName>
               <info xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+                <event xmlns="urn:oasis:names:tc:emergency:cap:1.2">Wind</event>
+                <severity xmlns="urn:oasis:names:tc:emergency:cap:1.2">Severe</severity>
+                <certainty xmlns="urn:oasis:names:tc:emergency:cap:1.2">Likely</certainty>
+                <urgency xmlns="urn:oasis:names:tc:emergency:cap:1.2">Expected</urgency>
                 <onset xmlns="urn:oasis:names:tc:emergency:cap:1.2">2025-11-04T12:00:00+01:00</onset>
                 <expires xmlns="urn:oasis:names:tc:emergency:cap:1.2">2025-11-05T00:00:00+01:00</expires>
+                <headline xmlns="urn:oasis:names:tc:emergency:cap:1.2">Orange warning for Wind</headline>
+                <description xmlns="urn:oasis:names:tc:emergency:cap:1.2">Strong winds expected.</description>
+                <area xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+                  <areaDesc xmlns="urn:oasis:names:tc:emergency:cap:1.2">Noord-Holland</areaDesc>
+                  <polygon xmlns="urn:oasis:names:tc:emergency:cap:1.2">52.5,4.5 53.0,4.5 53.0,5.0 52.5,5.0 52.5,4.5</polygon>
+                </area>
                 <parameter xmlns="urn:oasis:names:tc:emergency:cap:1.2">
                   <valueName xmlns="urn:oasis:names:tc:emergency:cap:1.2">awareness_level</valueName>
                   <value xmlns="urn:oasis:names:tc:emergency:cap:1.2">3; orange; Severe</value>
@@ -61,9 +72,20 @@ class MeteoAlarmServiceTest {
     List<MeteoAlarmWarning> warnings = service.parseAtomFeed(xml);
     assertNotNull(warnings);
     assertEquals(1, warnings.size());
-    assertEquals("3; orange; Severe", warnings.get(0).getAwarenessLevel());
-    assertNotNull(warnings.get(0).getOnset());
-    assertNotNull(warnings.get(0).getExpires());
+    MeteoAlarmWarning w = warnings.get(0);
+    assertEquals("3; orange; Severe", w.getAwarenessLevel());
+    assertEquals("Wind", w.getEvent());
+    assertEquals("Severe", w.getSeverity());
+    assertEquals("Likely", w.getCertainty());
+    assertEquals("Expected", w.getUrgency());
+    assertEquals("KNMI", w.getSenderName());
+    assertEquals("Orange warning for Wind", w.getHeadline());
+    assertEquals("Strong winds expected.", w.getDescription());
+    assertEquals("Noord-Holland", w.getAreaDesc());
+    assertNotNull(w.getPolygon());
+    assertTrue(w.getPolygon().contains("52.5,4.5"));
+    assertNotNull(w.getOnset());
+    assertNotNull(w.getExpires());
   }
 
   @Test
@@ -234,6 +256,51 @@ class MeteoAlarmServiceTest {
             .onset(now.minusHours(1)).expires(now.plusHours(3)).build()
     );
     assertEquals(WeatherAlarm.ORANGE, service.resolveAlarmForDay(warnings, today, now));
+  }
+
+  // ---- filterForLocation tests ------------------------------------------------
+
+  @Test
+  @DisplayName("filterForLocation returns polygon match when point is inside polygon")
+  void filterForLocation_polygonMatch() {
+    // Square polygon covering lat 52..53, lon 4..5
+    String polygon = "52.0,4.0 53.0,4.0 53.0,5.0 52.0,5.0 52.0,4.0";
+    List<MeteoAlarmWarning> warnings = List.of(
+        MeteoAlarmWarning.builder().awarenessLevel("3; orange; Severe")
+            .areaDesc("Noord-Holland").polygon(polygon).build()
+    );
+    // Point at 52.5, 4.5 is inside the polygon
+    List<MeteoAlarmWarning> result = service.filterForLocation(warnings, 52.5, 4.5, null);
+    assertEquals(1, result.size());
+  }
+
+  @Test
+  @DisplayName("filterForLocation excludes warning when point is outside polygon")
+  void filterForLocation_polygonNoMatch_fallsBackToSubdivision() {
+    String polygon = "52.0,4.0 53.0,4.0 53.0,5.0 52.0,5.0 52.0,4.0";
+    List<MeteoAlarmWarning> warnings = List.of(
+        MeteoAlarmWarning.builder().awarenessLevel("3; orange; Severe")
+            .areaDesc("Noord-Holland").polygon(polygon).build(),
+        MeteoAlarmWarning.builder().awarenessLevel("2; yellow; Moderate")
+            .areaDesc("Zuid-Holland").build()
+    );
+    // Point at 51.9, 4.4 is outside the polygon; only the non-polygon warning with matching
+    // subdivision (or country fallback) should be returned
+    List<MeteoAlarmWarning> result = service.filterForLocation(warnings, 51.9, 4.4, "Zuid-Holland");
+    assertEquals(1, result.size());
+    assertEquals("Zuid-Holland", result.get(0).getAreaDesc());
+  }
+
+  @Test
+  @DisplayName("filterForLocation falls back to all warnings when no polygon or subdivision match")
+  void filterForLocation_noMatch_countryFallback() {
+    List<MeteoAlarmWarning> warnings = List.of(
+        MeteoAlarmWarning.builder().awarenessLevel("3; orange; Severe")
+            .areaDesc("Netherlands").build()
+    );
+    // No polygon, subdivision not matching areaDesc: should get all warnings as fallback
+    List<MeteoAlarmWarning> result = service.filterForLocation(warnings, 52.5, 4.5, "Unknown-Region");
+    assertEquals(warnings, result);
   }
 
 }

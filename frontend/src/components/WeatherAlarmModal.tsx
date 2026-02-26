@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslations } from "next-intl";
-import { ExclamationTriangleFill, GeoAlt, Clock } from "react-bootstrap-icons";
+import { ExclamationTriangleFill, GeoAlt, Clock, Building } from "react-bootstrap-icons";
 import type { AlarmWarning } from "../types/AlarmWarning";
 
 interface WeatherAlarmModalProps {
@@ -88,18 +88,36 @@ export default function WeatherAlarmModal({ open, onClose, alarm, alarmWarnings 
             alarmWarnings.map((w, i) => {
               const level = getWarningAlarmLevel(w.awarenessLevel);
               const cfg = alarmConfig[level] ?? alarmConfig.YELLOW;
+              // Prefer structured 'event' field; fall back to 'awarenessType'
+              const eventLabel = w.event ?? w.awarenessType;
               return (
                 <div key={i} className={`rounded-lg border p-4 space-y-2 ${cfg.border} ${cfg.bg}`}>
                   {/* Type + level badge */}
                   <div className="flex items-center gap-2 flex-wrap">
-                    {w.awarenessType && (
+                    {eventLabel && (
                       <span className="font-semibold text-base text-gray-900 dark:text-white">
-                        {w.awarenessType}
+                        {eventLabel}
                       </span>
                     )}
                     <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${cfg.badge}`}>
                       {tAlarm(level.toLowerCase() as "yellow" | "orange" | "red").split(":")[0]}
                     </span>
+                    {/* Severity / certainty / urgency chips */}
+                    {w.severity && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                        {tModal("severity")}: {w.severity}
+                      </span>
+                    )}
+                    {w.certainty && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                        {tModal("certainty")}: {w.certainty}
+                      </span>
+                    )}
+                    {w.urgency && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                        {tModal("urgency")}: {w.urgency}
+                      </span>
+                    )}
                   </div>
 
                   {/* Headline */}
@@ -127,6 +145,14 @@ export default function WeatherAlarmModal({ open, onClose, alarm, alarmWarnings 
                       <span>
                         {formatDateTime(w.onset)} – {formatDateTime(w.expires)}
                       </span>
+                    </div>
+                  )}
+
+                  {/* Sender */}
+                  {w.senderName && (
+                    <div className="flex items-start gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                      <Building size={13} className="flex-shrink-0 mt-0.5" />
+                      <span>{tModal("issuedBy")}: {w.senderName}</span>
                     </div>
                   )}
                 </div>
