@@ -93,29 +93,35 @@ public class MeteoAlarmService {
   }
 
   /**
-   * Returns the highest active weather alarm level for the given country, or GREEN if no alarm
+   * Returns the highest active weather alarm level for the given location, or GREEN if no alarm
    * is active or the country is not covered by MeteoAlarm.
+   * When {@code subdivision} is non-blank, warnings are filtered to those whose area description
+   * contains the subdivision name (e.g. "Noord-Holland"). If no subdivision-specific warnings
+   * exist, all country-level warnings are considered as fallback.
    *
    * @param countryCode ISO 3166-1 alpha-2 country code (e.g. "NL")
+   * @param subdivision principal subdivision / province name (may be null)
    * @return the highest active WeatherAlarm level
    */
-  @Cacheable(value = "weatherAlarms", key = "#countryCode")
-  public WeatherAlarm getHighestAlarm(String countryCode) {
-    List<MeteoAlarmWarning> warnings = fetchWarnings(countryCode);
+  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + (#subdivision ?: '')")
+  public WeatherAlarm getHighestAlarm(String countryCode, String subdivision) {
+    List<MeteoAlarmWarning> warnings = filterByRegion(fetchWarnings(countryCode), subdivision);
     return resolveHighestActive(warnings, OffsetDateTime.now(ZoneOffset.UTC));
   }
 
   /**
    * Returns a list of active warnings for each daily entry date, or null when no alarm is active
-   * on a given day.
+   * on a given day. When {@code subdivision} is non-blank, warnings are narrowed to the region.
    *
    * @param countryCode ISO 3166-1 alpha-2 country code
+   * @param subdivision principal subdivision / province name (may be null)
    * @param dates       list of daily dates to check alarms for
    * @return list of WeatherAlarm levels (same size as dates), null entries where no alarm is active
    */
-  @Cacheable(value = "weatherAlarms", key = "#countryCode + '-daily'")
-  public List<WeatherAlarm> getDailyAlarms(String countryCode, List<LocalDate> dates) {
-    List<MeteoAlarmWarning> warnings = fetchWarnings(countryCode);
+  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + (#subdivision ?: '') + '-daily'")
+  public List<WeatherAlarm> getDailyAlarms(String countryCode, String subdivision,
+      List<LocalDate> dates) {
+    List<MeteoAlarmWarning> warnings = filterByRegion(fetchWarnings(countryCode), subdivision);
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
     List<WeatherAlarm> result = new ArrayList<>();
     for (LocalDate date : dates) {
@@ -125,15 +131,17 @@ public class MeteoAlarmService {
   }
 
   /**
-   * Returns all currently active warning objects for the given country.
+   * Returns all currently active warning objects for the given location.
+   * When {@code subdivision} is non-blank, warnings are narrowed to the region.
    * Returns an empty list when the country is not covered by MeteoAlarm or no alarms are active.
    *
    * @param countryCode ISO 3166-1 alpha-2 country code
+   * @param subdivision principal subdivision / province name (may be null)
    * @return list of currently active MeteoAlarmWarning objects
    */
-  @Cacheable(value = "weatherAlarms", key = "#countryCode + '-active'")
-  public List<MeteoAlarmWarning> getActiveWarnings(String countryCode) {
-    List<MeteoAlarmWarning> warnings = fetchWarnings(countryCode);
+  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + (#subdivision ?: '') + '-active'")
+  public List<MeteoAlarmWarning> getActiveWarnings(String countryCode, String subdivision) {
+    List<MeteoAlarmWarning> warnings = filterByRegion(fetchWarnings(countryCode), subdivision);
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
     List<MeteoAlarmWarning> active = new ArrayList<>();
     for (MeteoAlarmWarning warning : warnings) {
@@ -142,6 +150,23 @@ public class MeteoAlarmService {
       }
     }
     return active;
+  }
+
+  /**
+   * Filters warnings to those relevant for the given subdivision (province/region).
+   * Matching is done by checking whether the warning's {@code areaDesc} contains the subdivision
+   * name (case-insensitive). If {@code subdivision} is blank, or if no warning mentions the
+   * subdivision, all warnings are returned unchanged (country-level fallback).
+   */
+  List<MeteoAlarmWarning> filterByRegion(List<MeteoAlarmWarning> warnings, String subdivision) {
+    if (subdivision == null || subdivision.isBlank() || warnings.isEmpty()) {
+      return warnings;
+    }
+    String sub = subdivision.trim().toLowerCase();
+    List<MeteoAlarmWarning> regional = warnings.stream()
+        .filter(w -> w.getAreaDesc() != null && w.getAreaDesc().toLowerCase().contains(sub))
+        .collect(java.util.stream.Collectors.toList());
+    return regional.isEmpty() ? warnings : regional;
   }
 
   /**

@@ -145,6 +145,73 @@ class MeteoAlarmServiceTest {
   }
 
   @Test
+  @DisplayName("filterByRegion returns all warnings when subdivision is null")
+  void filterByRegion_nullSubdivision() {
+    List<MeteoAlarmWarning> warnings = List.of(
+        MeteoAlarmWarning.builder().awarenessLevel("3; orange; Severe")
+            .areaDesc("Netherlands: Noord-Holland").build()
+    );
+    assertEquals(warnings, service.filterByRegion(warnings, null));
+  }
+
+  @Test
+  @DisplayName("filterByRegion returns all warnings when subdivision is blank")
+  void filterByRegion_blankSubdivision() {
+    List<MeteoAlarmWarning> warnings = List.of(
+        MeteoAlarmWarning.builder().awarenessLevel("3; orange; Severe")
+            .areaDesc("Netherlands: Noord-Holland").build()
+    );
+    assertEquals(warnings, service.filterByRegion(warnings, "  "));
+  }
+
+  @Test
+  @DisplayName("filterByRegion returns only matching regional warnings")
+  void filterByRegion_matchingRegion() {
+    List<MeteoAlarmWarning> warnings = List.of(
+        MeteoAlarmWarning.builder().awarenessLevel("2; yellow; Moderate")
+            .areaDesc("Netherlands: Noord-Holland").build(),
+        MeteoAlarmWarning.builder().awarenessLevel("3; orange; Severe")
+            .areaDesc("Netherlands: Zuid-Holland").build()
+    );
+    List<MeteoAlarmWarning> result = service.filterByRegion(warnings, "Noord-Holland");
+    assertEquals(1, result.size());
+    assertEquals("Netherlands: Noord-Holland", result.get(0).getAreaDesc());
+  }
+
+  @Test
+  @DisplayName("filterByRegion is case-insensitive")
+  void filterByRegion_caseInsensitive() {
+    List<MeteoAlarmWarning> warnings = List.of(
+        MeteoAlarmWarning.builder().awarenessLevel("3; orange; Severe")
+            .areaDesc("Netherlands: Noord-Holland").build()
+    );
+    assertEquals(1, service.filterByRegion(warnings, "noord-holland").size());
+  }
+
+  @Test
+  @DisplayName("filterByRegion falls back to all warnings when no match for subdivision")
+  void filterByRegion_noMatch_fallsBack() {
+    List<MeteoAlarmWarning> warnings = List.of(
+        MeteoAlarmWarning.builder().awarenessLevel("3; orange; Severe")
+            .areaDesc("Netherlands: Gelderland").build()
+    );
+    // Noord-Holland not in areaDesc: fall back to country-level
+    List<MeteoAlarmWarning> result = service.filterByRegion(warnings, "Noord-Holland");
+    assertEquals(warnings, result);
+  }
+
+  @Test
+  @DisplayName("filterByRegion returns all warnings when areaDesc is null")
+  void filterByRegion_nullAreaDesc_fallsBack() {
+    List<MeteoAlarmWarning> warnings = List.of(
+        MeteoAlarmWarning.builder().awarenessLevel("3; orange; Severe").build()
+    );
+    // No areaDesc, subdivision supplied: fall back to country-level
+    List<MeteoAlarmWarning> result = service.filterByRegion(warnings, "Noord-Holland");
+    assertEquals(warnings, result);
+  }
+
+  @Test
   @DisplayName("resolveAlarmForDay returns null when no alarm overlaps day")
   void resolveAlarmForDay_noOverlap() {
     OffsetDateTime now = OffsetDateTime.now();

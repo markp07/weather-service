@@ -89,16 +89,16 @@ class WeatherServiceTest {
     when(openMeteoClient.getWeatherHourly(latitude, longitude)).thenReturn(weatherResponse);
     when(reverseGeocodeClient.getLocation(latitude, longitude)).thenReturn(location);
     when(weatherMapper.toWeather(weatherResponse, location)).thenReturn(weather);
-    when(meteoAlarmService.getHighestAlarm("NL")).thenReturn(WeatherAlarm.YELLOW);
-    when(meteoAlarmService.getActiveWarnings("NL")).thenReturn(Collections.emptyList());
-    when(meteoAlarmService.getDailyAlarms(anyString(), any())).thenReturn(
+    when(meteoAlarmService.getHighestAlarm("NL", null)).thenReturn(WeatherAlarm.YELLOW);
+    when(meteoAlarmService.getActiveWarnings("NL", null)).thenReturn(Collections.emptyList());
+    when(meteoAlarmService.getDailyAlarms(anyString(), any(), any())).thenReturn(
         Collections.singletonList(WeatherAlarm.YELLOW));
 
     Weather result = weatherService.getWeather(latitude, longitude);
 
     assertEquals(WeatherAlarm.YELLOW, result.getAlarm());
     assertEquals(WeatherAlarm.YELLOW, result.getDaily().get(0).getAlarm());
-    verify(meteoAlarmService).getHighestAlarm("NL");
+    verify(meteoAlarmService).getHighestAlarm("NL", null);
   }
 
   @Test
@@ -117,7 +117,7 @@ class WeatherServiceTest {
     Weather result = weatherService.getWeather(latitude, longitude);
 
     assertSame(expectedWeather, result);
-    verify(meteoAlarmService, never()).getHighestAlarm(anyString());
+    verify(meteoAlarmService, never()).getHighestAlarm(anyString(), any());
   }
 
   @Test
