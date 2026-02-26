@@ -103,7 +103,7 @@ public class MeteoAlarmService {
    * @param subdivision principal subdivision / province name (may be null)
    * @return the highest active WeatherAlarm level
    */
-  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + T(String).format('%.2f', #latitude) + ',' + T(String).format('%.2f', #longitude)")
+  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + T(String).format('%.2f', T(Math).round(#latitude / 0.05) * 0.05D) + ',' + T(String).format('%.2f', T(Math).round(#longitude / 0.05) * 0.05D)")
   public WeatherAlarm getHighestAlarm(String countryCode, double latitude, double longitude,
       String subdivision) {
     List<MeteoAlarmWarning> warnings = filterForLocation(fetchWarnings(countryCode), latitude,
@@ -122,7 +122,7 @@ public class MeteoAlarmService {
    * @param dates       list of daily dates to check alarms for
    * @return list of WeatherAlarm levels (same size as dates), null entries where no alarm is active
    */
-  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + T(String).format('%.2f', #latitude) + ',' + T(String).format('%.2f', #longitude) + '-daily'")
+  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + T(String).format('%.2f', T(Math).round(#latitude / 0.05) * 0.05D) + ',' + T(String).format('%.2f', T(Math).round(#longitude / 0.05) * 0.05D) + '-daily'")
   public List<WeatherAlarm> getDailyAlarms(String countryCode, double latitude, double longitude,
       String subdivision, List<LocalDate> dates) {
     List<MeteoAlarmWarning> warnings = filterForLocation(fetchWarnings(countryCode), latitude,
@@ -146,7 +146,7 @@ public class MeteoAlarmService {
    * @param subdivision principal subdivision / province name (may be null)
    * @return list of currently active MeteoAlarmWarning objects
    */
-  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + T(String).format('%.2f', #latitude) + ',' + T(String).format('%.2f', #longitude) + '-active'")
+  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + T(String).format('%.2f', T(Math).round(#latitude / 0.05) * 0.05D) + ',' + T(String).format('%.2f', T(Math).round(#longitude / 0.05) * 0.05D) + '-active'")
   public List<MeteoAlarmWarning> getActiveWarnings(String countryCode, double latitude,
       double longitude, String subdivision) {
     List<MeteoAlarmWarning> warnings = filterForLocation(fetchWarnings(countryCode), latitude,
