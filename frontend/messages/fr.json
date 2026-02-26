@@ -117,6 +117,12 @@
     "green": "Pas d'alerte météo",
     "yellow": "Alerte jaune: Météo potentiellement dangereuse",
     "orange": "Alerte orange: Météo significativement dangereuse",
-    "red": "Alerte rouge: Avertissement météo extrême"
+    "red": "Alerte rouge: Avertissement météo extrême",
+    "details": "Détails"
+  },
+  "alarmModal": {
+    "close": "Fermer",
+    "noDetails": "Aucun détail d'alerte disponible.",
+    "source": "Source : MeteoAlarm — Service officiel européen d'avertissement météo"
   }
 }

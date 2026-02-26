@@ -117,6 +117,12 @@
     "green": "Geen weerwaarschuwing",
     "yellow": "Code geel: Mogelijk gevaarlijk weer",
     "orange": "Code oranje: Aanzienlijk gevaarlijk weer",
-    "red": "Code rood: Extreem gevaarlijk weer"
+    "red": "Code rood: Extreem gevaarlijk weer",
+    "details": "Details"
+  },
+  "alarmModal": {
+    "close": "Sluiten",
+    "noDetails": "Geen waarschuwingsdetails beschikbaar.",
+    "source": "Bron: MeteoAlarm — Officiële Europese weerswaarschuwingsdienst"
   }
 }

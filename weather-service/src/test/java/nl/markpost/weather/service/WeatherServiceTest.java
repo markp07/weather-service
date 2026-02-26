@@ -83,13 +83,14 @@ class WeatherServiceTest {
     Daily daily = new Daily(LocalDateTime.now(), WeatherCode.CLEAR_SKY, 10.0, 20.0, 0.0, 0, 10,
         WindDirection.N, null, null, null);
     Weather weather = new Weather(52.0, 4.0, "Amsterdam", "Europe/Amsterdam", 5.0, null,
-        List.of(daily), List.of(), null);
+        List.of(daily), List.of(), null, null);
 
     when(openMeteoClient.getWeatherDaily(latitude, longitude)).thenReturn(weatherResponse);
     when(openMeteoClient.getWeatherHourly(latitude, longitude)).thenReturn(weatherResponse);
     when(reverseGeocodeClient.getLocation(latitude, longitude)).thenReturn(location);
     when(weatherMapper.toWeather(weatherResponse, location)).thenReturn(weather);
     when(meteoAlarmService.getHighestAlarm("NL")).thenReturn(WeatherAlarm.YELLOW);
+    when(meteoAlarmService.getActiveWarnings("NL")).thenReturn(Collections.emptyList());
     when(meteoAlarmService.getDailyAlarms(anyString(), any())).thenReturn(
         Collections.singletonList(WeatherAlarm.YELLOW));
 

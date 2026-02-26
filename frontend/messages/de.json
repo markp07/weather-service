@@ -117,6 +117,12 @@
     "green": "Keine Wetterwarnung",
     "yellow": "Gelbe Warnung: Möglicherweise gefährliches Wetter",
     "orange": "Orangene Warnung: Erheblich gefährliches Wetter",
-    "red": "Rote Warnung: Extremes Wetter"
+    "red": "Rote Warnung: Extremes Wetter",
+    "details": "Details"
+  },
+  "alarmModal": {
+    "close": "Schließen",
+    "noDetails": "Keine Warnungsdetails verfügbar.",
+    "source": "Quelle: MeteoAlarm — Offizielle europäische Wetterwarnungsdienst"
   }
 }

@@ -63,6 +63,7 @@ class WeatherControllerTest {
         current,
         List.of(),
         List.of(),
+        null,
         null
     );
     WeatherResponse apiWeather = new WeatherResponse();

@@ -125,6 +125,26 @@ public class MeteoAlarmService {
   }
 
   /**
+   * Returns all currently active warning objects for the given country.
+   * Returns an empty list when the country is not covered by MeteoAlarm or no alarms are active.
+   *
+   * @param countryCode ISO 3166-1 alpha-2 country code
+   * @return list of currently active MeteoAlarmWarning objects
+   */
+  @Cacheable(value = "weatherAlarms", key = "#countryCode + '-active'")
+  public List<MeteoAlarmWarning> getActiveWarnings(String countryCode) {
+    List<MeteoAlarmWarning> warnings = fetchWarnings(countryCode);
+    OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+    List<MeteoAlarmWarning> active = new ArrayList<>();
+    for (MeteoAlarmWarning warning : warnings) {
+      if (isActive(warning, now)) {
+        active.add(warning);
+      }
+    }
+    return active;
+  }
+
+  /**
    * Fetches and parses MeteoAlarm warnings for the given country.
    * Returns an empty list if the country is not covered or the feed is unavailable.
    */
@@ -150,8 +170,8 @@ public class MeteoAlarmService {
 
   /**
    * Parses the MeteoAlarm Atom/CAP feed XML and returns a list of warnings.
-   * Extracts awareness_level, onset and expires from embedded CAP data when available,
-   * otherwise falls back to parsing the entry title for color keywords.
+   * Extracts awareness_level, awareness_type, headline, description, areaDesc, onset and expires
+   * from embedded CAP data when available, otherwise falls back to parsing the entry title.
    */
   List<MeteoAlarmWarning> parseAtomFeed(String xml) {
     try {
@@ -170,7 +190,15 @@ public class MeteoAlarmService {
         OffsetDateTime expires = extractOffsetDateTime(entry, "expires");
 
         if (awarenessLevel != null && !awarenessLevel.isBlank()) {
-          warnings.add(new MeteoAlarmWarning(awarenessLevel, onset, expires));
+          warnings.add(MeteoAlarmWarning.builder()
+              .awarenessLevel(awarenessLevel)
+              .awarenessType(parseAwarenessTypeName(extractCapParam(entry, "awareness_type")))
+              .headline(extractCapText(entry, "headline"))
+              .description(extractCapText(entry, "description"))
+              .areaDesc(extractCapText(entry, "areaDesc"))
+              .onset(onset)
+              .expires(expires)
+              .build());
         }
       }
       return warnings;
@@ -185,21 +213,56 @@ public class MeteoAlarmService {
    * falling back to the entry title if the CAP parameter is not found.
    */
   private String extractAwarenessLevel(Element entry) {
-    // Try to find awareness_level in embedded CAP <parameter> elements
-    NodeList params = entry.getElementsByTagNameNS(CAP_NS, "parameter");
-    for (int j = 0; j < params.getLength(); j++) {
-      Element param = (Element) params.item(j);
-      NodeList names = param.getElementsByTagNameNS(CAP_NS, "valueName");
-      NodeList values = param.getElementsByTagNameNS(CAP_NS, "value");
-      if (names.getLength() > 0 && "awareness_level".equals(names.item(0).getTextContent())
-          && values.getLength() > 0) {
-        return values.item(0).getTextContent();
-      }
+    String value = extractCapParam(entry, "awareness_level");
+    if (value != null) {
+      return value;
     }
     // Fallback: use the entry <title> which often encodes the level
     NodeList titles = entry.getElementsByTagNameNS(ATOM_NS, "title");
     if (titles.getLength() > 0) {
       return titles.item(0).getTextContent();
+    }
+    return null;
+  }
+
+  /**
+   * Extracts the value of a named CAP parameter (inside &lt;cap:parameter&gt;) from an entry.
+   * Returns null when the parameter is not present.
+   */
+  private String extractCapParam(Element entry, String paramName) {
+    NodeList params = entry.getElementsByTagNameNS(CAP_NS, "parameter");
+    for (int j = 0; j < params.getLength(); j++) {
+      Element param = (Element) params.item(j);
+      NodeList names = param.getElementsByTagNameNS(CAP_NS, "valueName");
+      NodeList values = param.getElementsByTagNameNS(CAP_NS, "value");
+      if (names.getLength() > 0 && paramName.equals(names.item(0).getTextContent())
+          && values.getLength() > 0) {
+        return values.item(0).getTextContent().trim();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Parses the human-readable type name from an awareness_type CAP value.
+   * Strips the leading numeric code: "4; Thunderstorm" → "Thunderstorm".
+   */
+  private String parseAwarenessTypeName(String raw) {
+    if (raw == null) return null;
+    int semicolon = raw.indexOf(';');
+    return semicolon >= 0 && semicolon < raw.length() - 1
+        ? raw.substring(semicolon + 1).trim()
+        : raw;
+  }
+
+  /**
+   * Extracts the text content of a CAP element by local name from an Atom entry.
+   */
+  private String extractCapText(Element entry, String capElementName) {
+    NodeList nodes = entry.getElementsByTagNameNS(CAP_NS, capElementName);
+    if (nodes.getLength() > 0) {
+      String text = nodes.item(0).getTextContent().trim();
+      return text.isEmpty() ? null : text;
     }
     return null;
   }
@@ -267,7 +330,7 @@ public class MeteoAlarmService {
    * When onset/expires are not available, the warning is assumed to be active
    * (MeteoAlarm feeds typically only include currently active warnings).
    */
-  private boolean isActive(MeteoAlarmWarning warning, OffsetDateTime now) {
+  boolean isActive(MeteoAlarmWarning warning, OffsetDateTime now) {
     if (warning.getOnset() == null || warning.getExpires() == null) {
       return true;
     }

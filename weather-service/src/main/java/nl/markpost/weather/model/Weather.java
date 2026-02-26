@@ -28,4 +28,6 @@ public class Weather {
 
   private WeatherAlarm alarm;
 
+  private List<MeteoAlarmWarning> alarmWarnings;
+
 }

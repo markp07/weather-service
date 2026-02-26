@@ -1,9 +1,12 @@
 import React from "react";
 import { useTranslations } from "next-intl";
 import { ExclamationTriangleFill } from "react-bootstrap-icons";
+import type { AlarmWarning } from "../types/AlarmWarning";
 
 interface WeatherAlarmBannerProps {
   alarm: string;
+  alarmWarnings?: AlarmWarning[];
+  onClick?: () => void;
 }
 
 const alarmConfig: Record<string, { bg: string; text: string; border: string }> = {
@@ -24,7 +27,7 @@ const alarmConfig: Record<string, { bg: string; text: string; border: string }> 
   },
 };
 
-export default function WeatherAlarmBanner({ alarm }: WeatherAlarmBannerProps) {
+export default function WeatherAlarmBanner({ alarm, alarmWarnings, onClick }: WeatherAlarmBannerProps) {
   const tAlarm = useTranslations("alarm");
 
   if (!alarm || alarm === "GREEN") return null;
@@ -34,13 +37,26 @@ export default function WeatherAlarmBanner({ alarm }: WeatherAlarmBannerProps) {
 
   const labelKey = alarm.toLowerCase() as "yellow" | "orange" | "red";
 
+  // Collect unique alarm types from warnings
+  const types = alarmWarnings
+    ? [...new Set(alarmWarnings.map(w => w.awarenessType).filter(Boolean))]
+    : [];
+
   return (
-    <div
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${config.bg} ${config.text} ${config.border}`}
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg border ${config.bg} ${config.text} ${config.border} ${onClick ? "cursor-pointer hover:opacity-80 transition-opacity text-left" : "cursor-default"}`}
       role="alert"
     >
       <ExclamationTriangleFill size={18} className="flex-shrink-0" />
       <span className="text-sm font-semibold">{tAlarm(labelKey)}</span>
-    </div>
+      {types.length > 0 && (
+        <span className="text-sm opacity-75">· {types.join(" · ")}</span>
+      )}
+      {onClick && (
+        <span className="ml-auto text-xs opacity-60">{tAlarm("details")}</span>
+      )}
+    </button>
   );
 }

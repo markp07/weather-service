@@ -48,7 +48,7 @@ public class WeatherService {
 
   /**
    * Applies official weather alarms from MeteoAlarm to the mapped Weather object.
-   * Sets the overall alarm and per-day alarms for each daily entry.
+   * Sets the overall alarm, per-day alarms, and list of active warning details.
    */
   private void applyAlarms(Weather weather, ReverseGeocodeResponse location) {
     if (weather == null || location == null || location.getCountryCode() == null) {
@@ -57,6 +57,7 @@ public class WeatherService {
     String countryCode = location.getCountryCode();
     WeatherAlarm overallAlarm = meteoAlarmService.getHighestAlarm(countryCode);
     weather.setAlarm(overallAlarm);
+    weather.setAlarmWarnings(meteoAlarmService.getActiveWarnings(countryCode));
 
     if (weather.getDaily() != null && !weather.getDaily().isEmpty()) {
       List<LocalDate> dates = weather.getDaily().stream()

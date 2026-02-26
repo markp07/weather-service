@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 
 // Mock next-intl
 jest.mock('next-intl', () => ({
@@ -48,5 +48,27 @@ describe('WeatherAlarmBanner', () => {
   it('renders alarm icon', () => {
     render(<WeatherAlarmBanner alarm="YELLOW" />);
     expect(screen.getByTestId('alarm-icon')).toBeInTheDocument();
+  });
+
+  it('shows alarm types when alarmWarnings are provided', () => {
+    const warnings = [
+      { awarenessLevel: '3; orange; Severe', awarenessType: 'Wind' },
+      { awarenessLevel: '3; orange; Severe', awarenessType: 'Thunderstorm' },
+    ];
+    render(<WeatherAlarmBanner alarm="ORANGE" alarmWarnings={warnings} />);
+    expect(screen.getByText(/Wind/)).toBeInTheDocument();
+    expect(screen.getByText(/Thunderstorm/)).toBeInTheDocument();
+  });
+
+  it('shows details label when onClick is provided', () => {
+    render(<WeatherAlarmBanner alarm="YELLOW" onClick={() => {}} />);
+    expect(screen.getByText('alarm.details')).toBeInTheDocument();
+  });
+
+  it('calls onClick when banner is clicked', () => {
+    const onClick = jest.fn();
+    render(<WeatherAlarmBanner alarm="YELLOW" onClick={onClick} />);
+    fireEvent.click(screen.getByRole('alert'));
+    expect(onClick).toHaveBeenCalledTimes(1);
   });
 });

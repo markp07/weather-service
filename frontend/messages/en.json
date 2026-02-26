@@ -118,6 +118,12 @@
     "green": "No weather alarm",
     "yellow": "Yellow alarm: Possible adverse weather",
     "orange": "Orange alarm: Significant adverse weather",
-    "red": "Red alarm: Extreme weather warning"
+    "red": "Red alarm: Extreme weather warning",
+    "details": "Details"
+  },
+  "alarmModal": {
+    "close": "Close",
+    "noDetails": "No warning details available.",
+    "source": "Source: MeteoAlarm — Official European weather warning service"
   }
 }

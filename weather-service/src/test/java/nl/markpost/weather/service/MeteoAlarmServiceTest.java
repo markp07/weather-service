@@ -115,8 +115,10 @@ class MeteoAlarmServiceTest {
   void resolveHighestActive_multipleWarnings() {
     OffsetDateTime now = OffsetDateTime.now();
     List<MeteoAlarmWarning> warnings = List.of(
-        new MeteoAlarmWarning("2; yellow; Moderate", now.minusHours(1), now.plusHours(1)),
-        new MeteoAlarmWarning("3; orange; Severe", now.minusHours(1), now.plusHours(1))
+        MeteoAlarmWarning.builder().awarenessLevel("2; yellow; Moderate")
+            .onset(now.minusHours(1)).expires(now.plusHours(1)).build(),
+        MeteoAlarmWarning.builder().awarenessLevel("3; orange; Severe")
+            .onset(now.minusHours(1)).expires(now.plusHours(1)).build()
     );
     assertEquals(WeatherAlarm.ORANGE, service.resolveHighestActive(warnings, now));
   }
@@ -126,7 +128,8 @@ class MeteoAlarmServiceTest {
   void resolveHighestActive_expiredIgnored() {
     OffsetDateTime now = OffsetDateTime.now();
     List<MeteoAlarmWarning> warnings = List.of(
-        new MeteoAlarmWarning("4; red; Extreme", now.minusHours(2), now.minusHours(1))
+        MeteoAlarmWarning.builder().awarenessLevel("4; red; Extreme")
+            .onset(now.minusHours(2)).expires(now.minusHours(1)).build()
     );
     assertEquals(WeatherAlarm.GREEN, service.resolveHighestActive(warnings, now));
   }
@@ -136,7 +139,7 @@ class MeteoAlarmServiceTest {
   void resolveHighestActive_noTimeRange() {
     OffsetDateTime now = OffsetDateTime.now();
     List<MeteoAlarmWarning> warnings = List.of(
-        new MeteoAlarmWarning("Yellow warning for Wind", null, null)
+        MeteoAlarmWarning.builder().awarenessLevel("Yellow warning for Wind").build()
     );
     assertEquals(WeatherAlarm.YELLOW, service.resolveHighestActive(warnings, now));
   }
@@ -148,7 +151,8 @@ class MeteoAlarmServiceTest {
     LocalDate tomorrow = LocalDate.now().plusDays(1);
     // Warning only covers today
     List<MeteoAlarmWarning> warnings = List.of(
-        new MeteoAlarmWarning("2; yellow; Moderate", now.minusHours(1), now.plusHours(1))
+        MeteoAlarmWarning.builder().awarenessLevel("2; yellow; Moderate")
+            .onset(now.minusHours(1)).expires(now.plusHours(1)).build()
     );
     assertNull(service.resolveAlarmForDay(warnings, tomorrow, now));
   }
@@ -159,7 +163,8 @@ class MeteoAlarmServiceTest {
     OffsetDateTime now = OffsetDateTime.now();
     LocalDate today = LocalDate.now();
     List<MeteoAlarmWarning> warnings = List.of(
-        new MeteoAlarmWarning("3; orange; Severe", now.minusHours(1), now.plusHours(3))
+        MeteoAlarmWarning.builder().awarenessLevel("3; orange; Severe")
+            .onset(now.minusHours(1)).expires(now.plusHours(3)).build()
     );
     assertEquals(WeatherAlarm.ORANGE, service.resolveAlarmForDay(warnings, today, now));
   }

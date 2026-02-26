@@ -35,7 +35,8 @@ public interface WeatherMapper {
       @Mapping(target = "location", source = "location.city"),
       @Mapping(target = "daily", expression = "java(toDailyList(weather.getDaily()))"),
       @Mapping(target = "hourly", expression = "java(toHourlyList(weather.getHourly()))"),
-      @Mapping(target = "alarm", ignore = true)
+      @Mapping(target = "alarm", ignore = true),
+      @Mapping(target = "alarmWarnings", ignore = true)
   })
   Weather toWeather(WeatherResponse weather, ReverseGeocodeResponse location);
 

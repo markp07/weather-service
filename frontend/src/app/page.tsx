@@ -8,6 +8,7 @@ import HourlyGraphModal from "../components/HourlyGraphModal";
 import LocationBar from "../components/LocationBar";
 import LocationEditModal from "../components/LocationEditModal";
 import WeatherAlarmBanner from "../components/WeatherAlarmBanner";
+import WeatherAlarmModal from "../components/WeatherAlarmModal";
 import { IconArrowUp, IconArrowUpLeft, IconArrowUpRight, IconArrowDown, IconArrowDownLeft, IconArrowDownRight, IconArrowRight, IconArrowLeft } from "@tabler/icons-react";
 import { Sun, Crosshair, GraphUp, Wind } from 'react-bootstrap-icons';
 import type { Weather } from "../types/Weather";
@@ -66,6 +67,7 @@ export default function Home() {
   const [showLocationEditModal, setShowLocationEditModal] = React.useState(false);
   const [selectedLocationId, setSelectedLocationId] = React.useState<number | null>(null); // null = current location
   const [displayWeather, setDisplayWeather] = React.useState<Weather | null>(null);
+  const [showAlarmModal, setShowAlarmModal] = React.useState(false);
 
   // Update document title based on selected language
   React.useEffect(() => {
@@ -351,7 +353,11 @@ export default function Home() {
                       </div>
                     </div>
                     {displayWeather.alarm && displayWeather.alarm !== 'GREEN' && (
-                      <WeatherAlarmBanner alarm={displayWeather.alarm} />
+                      <WeatherAlarmBanner
+                        alarm={displayWeather.alarm}
+                        alarmWarnings={displayWeather.alarmWarnings}
+                        onClick={() => setShowAlarmModal(true)}
+                      />
                     )}
                     {/* Horizontal Scrollable Location Bar */}
                     <LocationBar
@@ -474,6 +480,16 @@ export default function Home() {
           onClose={() => setShowHourlyGraph(false)}
           hourlyData={displayWeather.hourly}
           dailyData={displayWeather.daily}
+        />
+      )}
+
+      {/* Alarm Detail Modal */}
+      {displayWeather && displayWeather.alarm && displayWeather.alarm !== 'GREEN' && (
+        <WeatherAlarmModal
+          open={showAlarmModal}
+          onClose={() => setShowAlarmModal(false)}
+          alarm={displayWeather.alarm}
+          alarmWarnings={displayWeather.alarmWarnings ?? []}
         />
       )}
 

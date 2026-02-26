@@ -46,6 +46,7 @@ class WeatherModelMapperTest {
         current,
         List.of(),
         List.of(),
+        null,
         null
     );
 
