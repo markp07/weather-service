@@ -19,7 +19,7 @@ public class ReverseGeocodeResponse {
 
   private String lookupSource;
 
-  private double longitude;
+  private Double longitude;
 
   private String localityLanguageRequested;
 

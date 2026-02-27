@@ -12,9 +12,9 @@ public class Informative {
 
   private String name;
   private String description;
-  private int order;
+  private Integer order;
   private String isoCode;
   private String wikidataId;
-  private long geonameId;
+  private Long geonameId;
 }
 
