@@ -90,11 +90,6 @@
 
     <!-- Other dependencies -->
     <dependency>
-      <groupId>io.github.openfeign</groupId>
-      <artifactId>feign-jackson</artifactId>
-      <version>${feign-jackson.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>${lombok.version}</version>
