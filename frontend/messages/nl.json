@@ -123,7 +123,7 @@
   "alarmModal": {
     "close": "Sluiten",
     "noDetails": "Geen waarschuwingsdetails beschikbaar.",
-    "source": "Bron: MeteoAlarm — Officiële Europese weerswaarschuwingsdienst",
+    "source": "Bron: MeteoAlarm EDR API — Officiële Europese weerswaarschuwingsdienst (EUMETNET/MeteoGate)",
     "severity": "Ernst",
     "certainty": "Zekerheid",
     "urgency": "Urgentie",

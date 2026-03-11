@@ -124,7 +124,7 @@
   "alarmModal": {
     "close": "Close",
     "noDetails": "No warning details available.",
-    "source": "Source: MeteoAlarm — Official European weather warning service",
+    "source": "Source: MeteoAlarm EDR API — Official European weather warning service (EUMETNET/MeteoGate)",
     "severity": "Severity",
     "certainty": "Certainty",
     "urgency": "Urgency",

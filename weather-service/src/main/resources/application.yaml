@@ -63,6 +63,11 @@ reverse-geocode:
   api-key: ${REVERSE_GEOCODE_API_KEY}
   url: https://api-bdc.io
 
+meteoalarm:
+  # API key for the MeteoAlarm EDR API (https://api.meteoalarm.org/edr/v1)
+  # Authentication: Authorization: Bearer <token>
+  api-key: ${METEOALARM_API_KEY:}
+
 ---
 # Local environment profile
 spring:
@@ -100,6 +105,9 @@ jwt:
 reverse-geocode:
   api-key: ${REVERSE_GEOCODE_API_KEY}
   url: https://api-bdc.io
+
+meteoalarm:
+  api-key: ${METEOALARM_API_KEY:}
 
 ---
 # UT environment profile

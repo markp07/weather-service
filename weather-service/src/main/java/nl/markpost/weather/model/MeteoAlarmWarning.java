@@ -72,12 +72,22 @@ public class MeteoAlarmWarning {
   private String polygon;
 
   /**
-   * Warning onset time (null when not available in the Atom entry).
+   * Recommended public action from the CAP alert (e.g. "Stay indoors. Avoid travel.").
+   */
+  private String instruction;
+
+  /**
+   * Warning effective time — when the warning was issued / becomes effective.
+   */
+  private OffsetDateTime effective;
+
+  /**
+   * Warning onset time (null when not available).
    */
   private OffsetDateTime onset;
 
   /**
-   * Warning expiry time (null when not available in the Atom entry).
+   * Warning expiry time (null when not available).
    */
   private OffsetDateTime expires;
 

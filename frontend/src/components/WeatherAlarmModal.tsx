@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslations } from "next-intl";
-import { ExclamationTriangleFill, GeoAlt, Clock, Building } from "react-bootstrap-icons";
+import { ExclamationTriangleFill, GeoAlt, Clock, Building, InfoCircle } from "react-bootstrap-icons";
 import type { AlarmWarning } from "../types/AlarmWarning";
 
 interface WeatherAlarmModalProps {
@@ -128,6 +128,14 @@ export default function WeatherAlarmModal({ open, onClose, alarm, alarmWarnings 
                   {/* Description */}
                   {w.description && (
                     <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{w.description}</p>
+                  )}
+
+                  {/* Instruction (recommended public action) */}
+                  {w.instruction && (
+                    <div className="flex items-start gap-1.5 text-sm text-gray-700 dark:text-gray-300">
+                      <InfoCircle size={14} className="flex-shrink-0 mt-0.5" />
+                      <span>{w.instruction}</span>
+                    </div>
                   )}
 
                   {/* Area */}

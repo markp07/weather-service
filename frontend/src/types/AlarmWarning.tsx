@@ -8,8 +8,10 @@ export interface AlarmWarning {
   senderName?: string;
   headline?: string;
   description?: string;
+  instruction?: string;
   areaDesc?: string;
   polygon?: string;
+  effective?: string;
   onset?: string;
   expires?: string;
 }

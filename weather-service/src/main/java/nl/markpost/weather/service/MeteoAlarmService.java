@@ -1,6 +1,5 @@
 package nl.markpost.weather.service;
 
-import java.io.StringReader;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -9,87 +8,64 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import nl.markpost.weather.model.MeteoAlarmWarning;
 import nl.markpost.weather.model.WeatherAlarm;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 /**
- * Service for fetching official weather alarms from MeteoAlarm.
+ * Service for fetching official weather alarms from the MeteoAlarm EDR API.
  * MeteoAlarm is backed by EUMETNET and the national meteorological services of 35+ European
  * countries, including KNMI (Netherlands), DWD (Germany), Météo-France, and others.
- * Feed URL: https://feeds.meteoalarm.org/feeds/meteoalarm-legacy-atom-{country}
+ * API: https://api.meteoalarm.org/edr/v1/collections/warnings/locations/{countryCode}
+ * Authentication: Authorization: Bearer {token}
  */
 @Slf4j
 @Service
 public class MeteoAlarmService {
 
-  private static final String BASE_URL =
-      "https://feeds.meteoalarm.org/feeds/meteoalarm-legacy-atom-";
-
-  private static final String ATOM_NS = "http://www.w3.org/2005/Atom";
-  private static final String CAP_NS = "urn:oasis:names:tc:emergency:cap:1.2";
+  private static final String API_BASE_URL =
+      "https://api.meteoalarm.org/edr/v1/collections/warnings/locations/";
 
   /**
-   * Mapping from ISO 3166-1 alpha-2 country code to MeteoAlarm country slug.
+   * ISO 3166-1 alpha-2 country codes supported by the MeteoAlarm EDR API.
    */
-  private static final Map<String, String> COUNTRY_SLUGS = Map.ofEntries(
-      Map.entry("AT", "austria"),
-      Map.entry("BE", "belgium"),
-      Map.entry("BA", "bosnia-herzegovina"),
-      Map.entry("BG", "bulgaria"),
-      Map.entry("HR", "croatia"),
-      Map.entry("CY", "cyprus"),
-      Map.entry("CZ", "czechia"),
-      Map.entry("DK", "denmark"),
-      Map.entry("EE", "estonia"),
-      Map.entry("FI", "finland"),
-      Map.entry("FR", "france"),
-      Map.entry("DE", "germany"),
-      Map.entry("GR", "greece"),
-      Map.entry("HU", "hungary"),
-      Map.entry("IS", "iceland"),
-      Map.entry("IE", "ireland"),
-      Map.entry("IL", "israel"),
-      Map.entry("IT", "italy"),
-      Map.entry("LV", "latvia"),
-      Map.entry("LT", "lithuania"),
-      Map.entry("LU", "luxembourg"),
-      Map.entry("MT", "malta"),
-      Map.entry("MD", "moldova"),
-      Map.entry("ME", "montenegro"),
-      Map.entry("NL", "netherlands"),
-      Map.entry("MK", "republic-of-north-macedonia"),
-      Map.entry("NO", "norway"),
-      Map.entry("PL", "poland"),
-      Map.entry("PT", "portugal"),
-      Map.entry("RO", "romania"),
-      Map.entry("RS", "serbia"),
-      Map.entry("SK", "slovakia"),
-      Map.entry("SI", "slovenia"),
-      Map.entry("ES", "spain"),
-      Map.entry("SE", "sweden"),
-      Map.entry("CH", "switzerland"),
-      Map.entry("UA", "ukraine"),
-      Map.entry("GB", "united-kingdom")
+  private static final Set<String> SUPPORTED_COUNTRIES = Set.of(
+      "AT", "BE", "BA", "BG", "HR", "CY", "CZ", "DK", "EE", "FI",
+      "FR", "DE", "GR", "HU", "IS", "IE", "IL", "IT", "LV", "LT",
+      "LU", "MT", "MD", "ME", "NL", "MK", "NO", "PL", "PT", "RO",
+      "RS", "SK", "SI", "ES", "SE", "CH", "UA", "GB"
   );
 
-  private final RestTemplate restTemplate;
+  private static final ParameterizedTypeReference<Map<String, Object>> RESPONSE_TYPE =
+      new ParameterizedTypeReference<>() {};
 
-  public MeteoAlarmService(RestTemplateBuilder builder) {
+  private final RestTemplate restTemplate;
+  private final String apiKey;
+  private final boolean apiKeyConfigured;
+
+  public MeteoAlarmService(RestTemplateBuilder builder,
+      @Value("${meteoalarm.api-key:}") String apiKey) {
     this.restTemplate = builder
         .connectTimeout(Duration.ofSeconds(5))
-        .readTimeout(Duration.ofSeconds(10))
+        .readTimeout(Duration.ofSeconds(15))
         .build();
+    this.apiKey = apiKey;
+    this.apiKeyConfigured = apiKey != null && !apiKey.isBlank();
+    if (!this.apiKeyConfigured) {
+      log.warn("MeteoAlarm API key is not configured (METEOALARM_API_KEY) — "
+          + "weather alarm fetching is disabled");
+    }
   }
 
   /**
@@ -190,7 +166,7 @@ public class MeteoAlarmService {
    * <p>
    * Priority:
    * <ol>
-   *   <li>Point-in-polygon: if any warnings carry a CAP {@code <polygon>}, check whether
+   *   <li>Point-in-polygon: if any warnings carry a CAP {@code polygon}, check whether
    *       the user's latitude/longitude falls inside — return all polygon matches.</li>
    *   <li>Subdivision text-match: if no polygon matches (or no polygons available), delegate to
    *       {@link #filterByRegion} which checks {@code areaDesc} against the subdivision name.
@@ -253,152 +229,224 @@ public class MeteoAlarmService {
   }
 
   /**
-   * Fetches and parses MeteoAlarm warnings for the given country.
-   * Returns an empty list if the country is not covered or the feed is unavailable.
+   * Fetches and parses MeteoAlarm warnings for the given country from the EDR JSON API.
+   * Returns an empty list if the country is not supported, the API key is not configured,
+   * or the request fails.
    */
   List<MeteoAlarmWarning> fetchWarnings(String countryCode) {
     if (countryCode == null) {
       return Collections.emptyList();
     }
-    String slug = COUNTRY_SLUGS.get(countryCode.toUpperCase());
-    if (slug == null) {
-      log.debug("Country {} is not covered by MeteoAlarm — no slug found", countryCode);
+    String upper = countryCode.toUpperCase();
+    if (!SUPPORTED_COUNTRIES.contains(upper)) {
+      log.debug("Country {} is not covered by MeteoAlarm — skipping alarm fetch", countryCode);
       return Collections.emptyList();
     }
-    String url = BASE_URL + slug;
-    log.info("Fetching MeteoAlarm feed for country {} from {}", countryCode, url);
+    if (!apiKeyConfigured) {
+      return Collections.emptyList();
+    }
+    String url = API_BASE_URL + upper;
+    log.info("Fetching MeteoAlarm warnings for country {} from {}", countryCode, url);
     try {
-      String xml = restTemplate.getForObject(url, String.class);
-      if (xml == null || xml.isBlank()) {
-        log.warn("MeteoAlarm feed for country {} returned an empty response", countryCode);
+      HttpHeaders headers = new HttpHeaders();
+      headers.setBearerAuth(apiKey);
+      HttpEntity<Void> entity = new HttpEntity<>(headers);
+      ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+          url, HttpMethod.GET, entity, RESPONSE_TYPE);
+      if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+        log.warn("MeteoAlarm API returned {} for country {}", response.getStatusCode(), countryCode);
         return Collections.emptyList();
       }
-      List<MeteoAlarmWarning> warnings = parseAtomFeed(xml);
-      log.info("MeteoAlarm feed for country {} returned {} warning(s)", countryCode,
+      List<MeteoAlarmWarning> warnings = parseApiResponse(response.getBody());
+      log.info("MeteoAlarm API for country {} returned {} warning(s)", countryCode,
           warnings.size());
       return warnings;
     } catch (Exception e) {
-      log.warn("Failed to fetch MeteoAlarm feed for country {}: {}", countryCode, e.getMessage());
+      log.warn("Failed to fetch MeteoAlarm warnings for country {}: {}", countryCode,
+          e.getMessage());
       return Collections.emptyList();
     }
   }
 
   /**
-   * Parses the MeteoAlarm Atom/CAP feed XML and returns a list of warnings.
-   * Extracts awareness_level, awareness_type, headline, description, areaDesc, onset and expires
-   * from embedded CAP data when available, otherwise falls back to parsing the entry title.
+   * Parses the MeteoAlarm EDR API GeoJSON FeatureCollection response and returns a list of
+   * warnings. Each feature's {@code properties} object carries CAP fields; the {@code geometry}
+   * object carries the affected-area polygon in GeoJSON format ([lon, lat] order), which is
+   * converted to the CAP text format ("lat,lon …") used by the point-in-polygon check.
    */
-  List<MeteoAlarmWarning> parseAtomFeed(String xml) {
+  @SuppressWarnings("unchecked")
+  List<MeteoAlarmWarning> parseApiResponse(Map<String, Object> response) {
+    List<Map<String, Object>> features;
     try {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      factory.setNamespaceAware(true);
-      DocumentBuilder db = factory.newDocumentBuilder();
-      Document doc = db.parse(new InputSource(new StringReader(xml)));
+      features = (List<Map<String, Object>>) response.get("features");
+    } catch (ClassCastException e) {
+      log.warn("MeteoAlarm API response has unexpected structure — 'features' is not a list: {}",
+          e.getMessage());
+      return Collections.emptyList();
+    }
+    if (features == null || features.isEmpty()) {
+      log.info("MeteoAlarm API response contains no features");
+      return Collections.emptyList();
+    }
+    log.info("MeteoAlarm API response contains {} feature(s)", features.size());
+    List<MeteoAlarmWarning> warnings = new ArrayList<>();
 
-      NodeList entries = doc.getElementsByTagNameNS(ATOM_NS, "entry");
-      log.info("MeteoAlarm feed contains {} entry(ies)", entries.getLength());
-      List<MeteoAlarmWarning> warnings = new ArrayList<>();
+    for (int i = 0; i < features.size(); i++) {
+      Map<String, Object> feature = features.get(i);
+      Map<String, Object> properties;
+      try {
+        properties = (Map<String, Object>) feature.get("properties");
+      } catch (ClassCastException e) {
+        log.warn("Feature[{}]: skipping — 'properties' has unexpected type: {}", i, e.getMessage());
+        continue;
+      }
+      if (properties == null) {
+        log.warn("Feature[{}]: skipping — no properties found", i);
+        continue;
+      }
 
-      for (int i = 0; i < entries.getLength(); i++) {
-        Element entry = (Element) entries.item(i);
-        String awarenessLevel = extractAwarenessLevel(entry);
-        String awarenessType = parseAwarenessTypeName(extractCapParam(entry, "awareness_type"));
-        String event = extractCapText(entry, "event");
-        String severity = extractCapText(entry, "severity");
-        String certainty = extractCapText(entry, "certainty");
-        String urgency = extractCapText(entry, "urgency");
-        String senderName = extractCapText(entry, "senderName");
-        String headline = extractCapText(entry, "headline");
-        String description = extractCapText(entry, "description");
-        String areaDesc = extractCapText(entry, "areaDesc");
-        String polygon = extractCapText(entry, "polygon");
-        OffsetDateTime onset = extractOffsetDateTime(entry, "onset");
-        OffsetDateTime expires = extractOffsetDateTime(entry, "expires");
+      String awarenessLevel = getString(properties, "awareness_level");
+      String awarenessType = parseAwarenessTypeName(getString(properties, "awareness_type"));
+      String event = getString(properties, "event");
+      String severity = getString(properties, "severity");
+      String certainty = getString(properties, "certainty");
+      String urgency = getString(properties, "urgency");
+      String senderName = getString(properties, "senderName");
+      String headline = getString(properties, "headline");
+      String description = getString(properties, "description");
+      String instruction = getString(properties, "instruction");
+      String areaDesc = getString(properties, "areaDesc");
+      OffsetDateTime onset = parseDateTime(properties, "onset", i, headline);
+      OffsetDateTime expires = parseDateTime(properties, "expires", i, headline);
+      OffsetDateTime effective = parseDateTime(properties, "effective", i, headline);
 
-        log.debug("Entry[{}]: awarenessLevel='{}' awarenessType='{}' event='{}' severity='{}' "
-                + "certainty='{}' urgency='{}' sender='{}' areaDesc='{}' "
-                + "polygon={} onset={} expires={}",
-            i, awarenessLevel, awarenessType, event, severity, certainty, urgency, senderName,
-            areaDesc, polygon != null ? "(present)" : "(absent)", onset, expires);
+      // GeoJSON polygon: coordinates are [[[lon, lat], ...]] — convert to CAP text "lat,lon …"
+      String polygon = extractGeoJsonPolygon(feature);
 
-        if (awarenessLevel == null || awarenessLevel.isBlank()) {
-          log.warn("Entry[{}]: skipping — no awarenessLevel found (headline='{}')", i, headline);
+      log.debug("Feature[{}]: awarenessLevel='{}' awarenessType='{}' event='{}' severity='{}' "
+              + "certainty='{}' urgency='{}' sender='{}' areaDesc='{}' "
+              + "polygon={} onset={} expires={}",
+          i, awarenessLevel, awarenessType, event, severity, certainty, urgency, senderName,
+          areaDesc, polygon != null ? "(present)" : "(absent)", onset, expires);
+
+      if (awarenessLevel == null || awarenessLevel.isBlank()) {
+        log.warn("Feature[{}]: skipping — no awarenessLevel found (headline='{}')", i, headline);
+        continue;
+      }
+      if (onset == null) {
+        log.warn("Feature[{}]: onset is missing for warning '{}'", i,
+            headline != null ? headline : awarenessLevel);
+      }
+      if (expires == null) {
+        log.warn("Feature[{}]: expires is missing for warning '{}'", i,
+            headline != null ? headline : awarenessLevel);
+      }
+      if (areaDesc == null) {
+        log.warn("Feature[{}]: areaDesc is missing for warning '{}'", i,
+            headline != null ? headline : awarenessLevel);
+      }
+      if (polygon == null) {
+        log.debug("Feature[{}]: no polygon geometry — will fall back to subdivision text-match",
+            i);
+      }
+
+      warnings.add(MeteoAlarmWarning.builder()
+          .awarenessLevel(awarenessLevel)
+          .awarenessType(awarenessType)
+          .event(event)
+          .severity(severity)
+          .certainty(certainty)
+          .urgency(urgency)
+          .senderName(senderName)
+          .headline(headline)
+          .description(description)
+          .instruction(instruction)
+          .areaDesc(areaDesc)
+          .polygon(polygon)
+          .effective(effective)
+          .onset(onset)
+          .expires(expires)
+          .build());
+    }
+    log.info("Parsed {} valid warning(s) from MeteoAlarm API response", warnings.size());
+    return warnings;
+  }
+
+  /**
+   * Returns the string value of a property key, trimmed; null when absent or empty.
+   */
+  private String getString(Map<String, Object> props, String key) {
+    Object val = props.get(key);
+    if (val == null) {
+      return null;
+    }
+    String s = val.toString().trim();
+    return s.isEmpty() ? null : s;
+  }
+
+  /**
+   * Parses an ISO-8601 date-time string from the given property key.
+   * Logs a debug message and returns null when the value is missing or cannot be parsed.
+   */
+  private OffsetDateTime parseDateTime(Map<String, Object> props, String key,
+      int featureIndex, String context) {
+    String val = getString(props, key);
+    if (val == null) {
+      return null;
+    }
+    try {
+      return OffsetDateTime.parse(val);
+    } catch (Exception e) {
+      log.debug("Feature[{}]: could not parse {} '{}' — {}", featureIndex, key, val,
+          e.getMessage());
+      return null;
+    }
+  }
+
+  /**
+   * Extracts the GeoJSON polygon geometry from a feature and converts it to the CAP text format
+   * used by {@link #pointInPolygon}: space-separated {@code "lat,lon"} pairs.
+   * GeoJSON uses [lon, lat] coordinate order; CAP uses lat,lon order.
+   * Returns null when no valid Polygon geometry is present or geometry is malformed.
+   */
+  @SuppressWarnings("unchecked")
+  private String extractGeoJsonPolygon(Map<String, Object> feature) {
+    try {
+      Map<String, Object> geometry = (Map<String, Object>) feature.get("geometry");
+      if (geometry == null) {
+        return null;
+      }
+      String type = getString(geometry, "type");
+      if (!"Polygon".equals(type)) {
+        return null;
+      }
+      List<List<List<Number>>> coords =
+          (List<List<List<Number>>>) geometry.get("coordinates");
+      if (coords == null || coords.isEmpty()) {
+        return null;
+      }
+      List<List<Number>> ring = coords.get(0); // outer ring
+      if (ring == null || ring.size() < 3) {
+        return null;
+      }
+      StringBuilder sb = new StringBuilder();
+      for (List<Number> point : ring) {
+        if (point.size() < 2) {
           continue;
         }
-        if (onset == null) {
-          log.warn("Entry[{}]: onset is missing for warning '{}'", i,
-              headline != null ? headline : awarenessLevel);
+        double lon = point.get(0).doubleValue();
+        double lat = point.get(1).doubleValue();
+        if (sb.length() > 0) {
+          sb.append(' ');
         }
-        if (expires == null) {
-          log.warn("Entry[{}]: expires is missing for warning '{}'", i,
-              headline != null ? headline : awarenessLevel);
-        }
-        if (areaDesc == null) {
-          log.warn("Entry[{}]: areaDesc is missing for warning '{}'", i,
-              headline != null ? headline : awarenessLevel);
-        }
-        if (polygon == null) {
-          log.debug("Entry[{}]: no polygon geometry — will fall back to subdivision text-match",
-              i);
-        }
-
-        warnings.add(MeteoAlarmWarning.builder()
-            .awarenessLevel(awarenessLevel)
-            .awarenessType(awarenessType)
-            .event(event)
-            .severity(severity)
-            .certainty(certainty)
-            .urgency(urgency)
-            .senderName(senderName)
-            .headline(headline)
-            .description(description)
-            .areaDesc(areaDesc)
-            .polygon(polygon)
-            .onset(onset)
-            .expires(expires)
-            .build());
+        sb.append(lat).append(',').append(lon);
       }
-      log.info("Parsed {} valid warning(s) from MeteoAlarm feed", warnings.size());
-      return warnings;
-    } catch (Exception e) {
-      log.warn("Failed to parse MeteoAlarm Atom feed: {}", e.getMessage());
-      return Collections.emptyList();
+      String result = sb.toString().trim();
+      return result.isEmpty() ? null : result;
+    } catch (ClassCastException | NullPointerException e) {
+      log.debug("Could not extract GeoJSON polygon from feature geometry: {}", e.getMessage());
+      return null;
     }
-  }
-
-  /**
-   * Extracts the awareness_level from the CAP parameter section of an Atom entry,
-   * falling back to the entry title if the CAP parameter is not found.
-   */
-  private String extractAwarenessLevel(Element entry) {
-    String value = extractCapParam(entry, "awareness_level");
-    if (value != null) {
-      return value;
-    }
-    // Fallback: use the entry <title> which often encodes the level
-    NodeList titles = entry.getElementsByTagNameNS(ATOM_NS, "title");
-    if (titles.getLength() > 0) {
-      return titles.item(0).getTextContent();
-    }
-    return null;
-  }
-
-  /**
-   * Extracts the value of a named CAP parameter (inside &lt;cap:parameter&gt;) from an entry.
-   * Returns null when the parameter is not present.
-   */
-  private String extractCapParam(Element entry, String paramName) {
-    NodeList params = entry.getElementsByTagNameNS(CAP_NS, "parameter");
-    for (int j = 0; j < params.getLength(); j++) {
-      Element param = (Element) params.item(j);
-      NodeList names = param.getElementsByTagNameNS(CAP_NS, "valueName");
-      NodeList values = param.getElementsByTagNameNS(CAP_NS, "value");
-      if (names.getLength() > 0 && paramName.equals(names.item(0).getTextContent())
-          && values.getLength() > 0) {
-        return values.item(0).getTextContent().trim();
-      }
-    }
-    return null;
   }
 
   /**
@@ -406,38 +454,13 @@ public class MeteoAlarmService {
    * Strips the leading numeric code: "4; Thunderstorm" → "Thunderstorm".
    */
   private String parseAwarenessTypeName(String raw) {
-    if (raw == null) return null;
+    if (raw == null) {
+      return null;
+    }
     int semicolon = raw.indexOf(';');
     return semicolon >= 0 && semicolon < raw.length() - 1
         ? raw.substring(semicolon + 1).trim()
         : raw;
-  }
-
-  /**
-   * Extracts the text content of a CAP element by local name from an Atom entry.
-   */
-  private String extractCapText(Element entry, String capElementName) {
-    NodeList nodes = entry.getElementsByTagNameNS(CAP_NS, capElementName);
-    if (nodes.getLength() > 0) {
-      String text = nodes.item(0).getTextContent().trim();
-      return text.isEmpty() ? null : text;
-    }
-    return null;
-  }
-
-  /**
-   * Extracts an OffsetDateTime from a CAP element name within an Atom entry.
-   */
-  private OffsetDateTime extractOffsetDateTime(Element entry, String capElementName) {
-    NodeList nodes = entry.getElementsByTagNameNS(CAP_NS, capElementName);
-    if (nodes.getLength() > 0) {
-      try {
-        return OffsetDateTime.parse(nodes.item(0).getTextContent().trim());
-      } catch (Exception e) {
-        log.debug("Could not parse {} date: {}", capElementName, e.getMessage());
-      }
-    }
-    return null;
   }
 
   /**
@@ -486,7 +509,7 @@ public class MeteoAlarmService {
   /**
    * Checks if a warning is currently active at the given moment.
    * When onset/expires are not available, the warning is assumed to be active
-   * (MeteoAlarm feeds typically only include currently active warnings).
+   * (MeteoAlarm API typically only includes currently active warnings).
    */
   boolean isActive(MeteoAlarmWarning warning, OffsetDateTime now) {
     if (warning.getOnset() == null || warning.getExpires() == null) {
