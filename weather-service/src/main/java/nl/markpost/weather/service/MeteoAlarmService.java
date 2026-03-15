@@ -1,76 +1,59 @@
 package nl.markpost.weather.service;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import nl.markpost.weather.client.MeteoGateClient;
 import nl.markpost.weather.model.MeteoAlarmWarning;
 import nl.markpost.weather.model.WeatherAlarm;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 /**
- * Service for fetching official weather alarms from the MeteoAlarm EDR API.
- * MeteoAlarm is backed by EUMETNET and the national meteorological services of 35+ European
- * countries, including KNMI (Netherlands), DWD (Germany), Météo-France, and others.
- * API: https://api.meteoalarm.org/edr/v1/collections/warnings/locations/{countryCode}
+ * Service for fetching official weather alarms from the MeteoGate Warnings API.
+ * MeteoGate is the open EUMETNET data access platform, providing access to warnings from 35+
+ * European National Meteorological and Hydrological Services via the OGC API EDR standard.
+ * API: https://api.meteogate.eu/warnings/collections/warnings/locations/{countryCode}
  * Authentication: Authorization: Bearer {token}
  */
 @Slf4j
 @Service
 public class MeteoAlarmService {
 
-  private static final String API_BASE_URL =
-      "https://api.meteoalarm.org/edr/v1/collections/warnings/locations/";
-
   /**
-   * ISO 3166-1 alpha-2 country codes supported by the MeteoAlarm EDR API.
+   * ISO 3166-1 alpha-2 country codes supported by the MeteoGate Warnings API.
    */
   private static final Set<String> SUPPORTED_COUNTRIES = Set.of(
       "AT", "BE", "BA", "BG", "HR", "CY", "CZ", "DK", "EE", "FI",
       "FR", "DE", "GR", "HU", "IS", "IE", "IL", "IT", "LV", "LT",
       "LU", "MT", "MD", "ME", "NL", "MK", "NO", "PL", "PT", "RO",
-      "RS", "SK", "SI", "ES", "SE", "CH", "UA", "GB"
+      "RS", "SK", "SI", "ES", "SE", "CH", "UA", "UK"
   );
 
-  private static final ParameterizedTypeReference<Map<String, Object>> RESPONSE_TYPE =
-      new ParameterizedTypeReference<>() {};
-
-  private final RestTemplate restTemplate;
-  private final String apiKey;
+  private final MeteoGateClient meteoGateClient;
   private final boolean apiKeyConfigured;
 
-  public MeteoAlarmService(RestTemplateBuilder builder,
+  public MeteoAlarmService(MeteoGateClient meteoGateClient,
       @Value("${meteoalarm.api-key:}") String apiKey) {
-    this.restTemplate = builder
-        .connectTimeout(Duration.ofSeconds(5))
-        .readTimeout(Duration.ofSeconds(15))
-        .build();
-    this.apiKey = apiKey;
+    this.meteoGateClient = meteoGateClient;
     this.apiKeyConfigured = apiKey != null && !apiKey.isBlank();
     if (!this.apiKeyConfigured) {
-      log.warn("MeteoAlarm API key is not configured (METEOALARM_API_KEY) — "
+      log.warn("MeteoGate API key is not configured (METEOALARM_API_KEY) — "
           + "weather alarm fetching is disabled");
     }
   }
 
   /**
    * Returns the highest active weather alarm level for the given location, or GREEN if no alarm
-   * is active or the country is not covered by MeteoAlarm.
+   * is active or the country is not covered by MeteoGate.
    * Uses point-in-polygon filtering (preferred) or subdivision text-matching as fallback.
    *
    * @param countryCode ISO 3166-1 alpha-2 country code (e.g. "NL")
@@ -114,7 +97,7 @@ public class MeteoAlarmService {
   /**
    * Returns all currently active warning objects for the given location.
    * Uses point-in-polygon filtering (preferred) or subdivision text-matching.
-   * Returns an empty list when the country is not covered by MeteoAlarm or no alarms are active.
+   * Returns an empty list when the country is not covered by MeteoGate or no alarms are active.
    *
    * @param countryCode ISO 3166-1 alpha-2 country code
    * @param latitude    user latitude for polygon-based filtering
@@ -229,7 +212,7 @@ public class MeteoAlarmService {
   }
 
   /**
-   * Fetches and parses MeteoAlarm warnings for the given country from the EDR JSON API.
+   * Fetches and parses MeteoGate warnings for the given country from the OGC API EDR.
    * Returns an empty list if the country is not supported, the API key is not configured,
    * or the request fails.
    */
@@ -239,37 +222,37 @@ public class MeteoAlarmService {
     }
     String upper = countryCode.toUpperCase();
     if (!SUPPORTED_COUNTRIES.contains(upper)) {
-      log.debug("Country {} is not covered by MeteoAlarm — skipping alarm fetch", countryCode);
+      log.debug("Country {} is not covered by MeteoGate — skipping alarm fetch", countryCode);
       return Collections.emptyList();
     }
     if (!apiKeyConfigured) {
       return Collections.emptyList();
     }
-    String url = API_BASE_URL + upper;
-    log.info("Fetching MeteoAlarm warnings for country {} from {}", countryCode, url);
+    // The datetime parameter is required by the API. Use a window from now to 14 days ahead
+    // to cover all current and upcoming warnings needed for the daily forecast display.
+    OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+    String datetimeParam = now.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        + "/" + now.plusDays(14).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    log.info("Fetching MeteoGate warnings for country {}", countryCode);
     try {
-      HttpHeaders headers = new HttpHeaders();
-      headers.setBearerAuth(apiKey);
-      HttpEntity<Void> entity = new HttpEntity<>(headers);
-      ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-          url, HttpMethod.GET, entity, RESPONSE_TYPE);
-      if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-        log.warn("MeteoAlarm API returned {} for country {}", response.getStatusCode(), countryCode);
+      Map<String, Object> body = meteoGateClient.getWarnings(upper, datetimeParam);
+      if (body == null) {
+        log.warn("MeteoGate API returned null body for country {}", countryCode);
         return Collections.emptyList();
       }
-      List<MeteoAlarmWarning> warnings = parseApiResponse(response.getBody());
-      log.info("MeteoAlarm API for country {} returned {} warning(s)", countryCode,
+      List<MeteoAlarmWarning> warnings = parseApiResponse(body);
+      log.info("MeteoGate API for country {} returned {} warning(s)", countryCode,
           warnings.size());
       return warnings;
     } catch (Exception e) {
-      log.warn("Failed to fetch MeteoAlarm warnings for country {}: {}", countryCode,
+      log.warn("Failed to fetch MeteoGate warnings for country {}: {}", countryCode,
           e.getMessage());
       return Collections.emptyList();
     }
   }
 
   /**
-   * Parses the MeteoAlarm EDR API GeoJSON FeatureCollection response and returns a list of
+   * Parses the MeteoGate OGC API EDR GeoJSON FeatureCollection response and returns a list of
    * warnings. Each feature's {@code properties} object carries CAP fields; the {@code geometry}
    * object carries the affected-area polygon in GeoJSON format ([lon, lat] order), which is
    * converted to the CAP text format ("lat,lon …") used by the point-in-polygon check.
@@ -280,15 +263,15 @@ public class MeteoAlarmService {
     try {
       features = (List<Map<String, Object>>) response.get("features");
     } catch (ClassCastException e) {
-      log.warn("MeteoAlarm API response has unexpected structure — 'features' is not a list: {}",
+      log.warn("MeteoGate API response has unexpected structure — 'features' is not a list: {}",
           e.getMessage());
       return Collections.emptyList();
     }
     if (features == null || features.isEmpty()) {
-      log.info("MeteoAlarm API response contains no features");
+      log.info("MeteoGate API response contains no features");
       return Collections.emptyList();
     }
-    log.info("MeteoAlarm API response contains {} feature(s)", features.size());
+    log.info("MeteoGate API response contains {} feature(s)", features.size());
     List<MeteoAlarmWarning> warnings = new ArrayList<>();
 
     for (int i = 0; i < features.size(); i++) {
@@ -368,7 +351,7 @@ public class MeteoAlarmService {
           .expires(expires)
           .build());
     }
-    log.info("Parsed {} valid warning(s) from MeteoAlarm API response", warnings.size());
+    log.info("Parsed {} valid warning(s) from MeteoGate API response", warnings.size());
     return warnings;
   }
 
@@ -509,7 +492,7 @@ public class MeteoAlarmService {
   /**
    * Checks if a warning is currently active at the given moment.
    * When onset/expires are not available, the warning is assumed to be active
-   * (MeteoAlarm API typically only includes currently active warnings).
+   * (MeteoGate API typically only includes currently active warnings).
    */
   boolean isActive(MeteoAlarmWarning warning, OffsetDateTime now) {
     if (warning.getOnset() == null || warning.getExpires() == null) {

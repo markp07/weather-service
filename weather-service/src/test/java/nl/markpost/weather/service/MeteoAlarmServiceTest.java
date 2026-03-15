@@ -4,28 +4,32 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import nl.markpost.weather.client.MeteoGateClient;
 import nl.markpost.weather.model.MeteoAlarmWarning;
 import nl.markpost.weather.model.WeatherAlarm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 
 class MeteoAlarmServiceTest {
 
+  private MeteoGateClient meteoGateClient;
   private MeteoAlarmService service;
 
   @BeforeEach
   void setUp() {
+    meteoGateClient = mock(MeteoGateClient.class);
     // Pass empty API key so the service initialises without failing (fetchWarnings will skip gracefully)
-    service = new MeteoAlarmService(new RestTemplateBuilder(), "");
+    service = new MeteoAlarmService(meteoGateClient, "");
   }
 
   // ---- fetchWarnings early-exit tests ----------------------------------------
@@ -48,6 +52,42 @@ class MeteoAlarmServiceTest {
   void fetchWarnings_noApiKey() {
     // Service was created with empty API key, so NL (a supported country) should return empty
     assertTrue(service.fetchWarnings("NL").isEmpty());
+  }
+
+  @Test
+  @DisplayName("fetchWarnings calls client and returns parsed warnings when API key is configured")
+  void fetchWarnings_callsClientWhenKeyConfigured() {
+    MeteoAlarmService serviceWithKey = new MeteoAlarmService(meteoGateClient, "test-token");
+    Map<String, Object> props = new HashMap<>();
+    props.put("awareness_level", "2; yellow; Moderate");
+    props.put("areaDesc", "Netherlands");
+    Map<String, Object> feature = buildFeature(props, null);
+    when(meteoGateClient.getWarnings(anyString(), anyString()))
+        .thenReturn(buildFeatureCollection(List.of(feature)));
+
+    List<MeteoAlarmWarning> result = serviceWithKey.fetchWarnings("NL");
+
+    assertEquals(1, result.size());
+    assertEquals("2; yellow; Moderate", result.get(0).getAwarenessLevel());
+  }
+
+  @Test
+  @DisplayName("fetchWarnings returns empty list when client throws an exception")
+  void fetchWarnings_clientException_returnsEmpty() {
+    MeteoAlarmService serviceWithKey = new MeteoAlarmService(meteoGateClient, "test-token");
+    when(meteoGateClient.getWarnings(anyString(), anyString()))
+        .thenThrow(new RuntimeException("connection refused"));
+
+    assertTrue(serviceWithKey.fetchWarnings("NL").isEmpty());
+  }
+
+  @Test
+  @DisplayName("fetchWarnings returns empty list when client returns null")
+  void fetchWarnings_clientReturnsNull_returnsEmpty() {
+    MeteoAlarmService serviceWithKey = new MeteoAlarmService(meteoGateClient, "test-token");
+    when(meteoGateClient.getWarnings(anyString(), anyString())).thenReturn(null);
+
+    assertTrue(serviceWithKey.fetchWarnings("NL").isEmpty());
   }
 
   // ---- parseApiResponse tests ------------------------------------------------

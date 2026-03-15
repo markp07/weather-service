@@ -92,6 +92,8 @@ class WeatherServiceTest {
     WeatherResponse weatherResponse = mock(WeatherResponse.class);
     ReverseGeocodeResponse location = new ReverseGeocodeResponse();
     location.setCountryCode("NL");
+    location.setLatitude(52.0);
+    location.setLongitude(4.0);
     Daily daily = new Daily(LocalDateTime.now(), WeatherCode.CLEAR_SKY, 10.0, 20.0, 0.0, 0, 10,
         WindDirection.N, null, null, null);
     Weather weather = new Weather(52.0, 4.0, "Amsterdam", "Europe/Amsterdam", 5.0, null,

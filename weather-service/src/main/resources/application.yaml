@@ -70,7 +70,9 @@ geocoding:
   url: https://geocoding-api.open-meteo.com
 
 meteoalarm:
-  # API key for the MeteoAlarm EDR API (https://api.meteoalarm.org/edr/v1)
+  # Base URL for the MeteoGate Warnings OGC API EDR
+  url: https://api.meteogate.eu/warnings
+  # API key for the MeteoGate Warnings API
   # Authentication: Authorization: Bearer <token>
   api-key: ${METEOALARM_API_KEY:}
 
@@ -113,6 +115,7 @@ reverse-geocode:
   url: https://api-bdc.io
 
 meteoalarm:
+  url: https://api.meteogate.eu/warnings
   api-key: ${METEOALARM_API_KEY:}
 
 ---
