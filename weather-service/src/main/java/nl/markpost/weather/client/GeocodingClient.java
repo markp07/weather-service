@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 /**
  * Client for calling the Open-Meteo Geocoding API.
  */
-@FeignClient(name = "geocodingClient", url = "https://geocoding-api.open-meteo.com")
+@FeignClient(name = "geocodingClient", url = "${geocoding.url}")
 public interface GeocodingClient {
 
   /**

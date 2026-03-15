@@ -63,6 +63,12 @@ reverse-geocode:
   api-key: ${REVERSE_GEOCODE_API_KEY}
   url: https://api-bdc.io
 
+open-meteo:
+  url: https://api.open-meteo.com
+
+geocoding:
+  url: https://geocoding-api.open-meteo.com
+
 ---
 # Local environment profile
 spring:
@@ -100,3 +106,9 @@ jwt:
 reverse-geocode:
   api-key: ${REVERSE_GEOCODE_API_KEY}
   url: https://api-bdc.io
+
+open-meteo:
+  url: https://api.open-meteo.com
+
+geocoding:
+  url: https://geocoding-api.open-meteo.com
