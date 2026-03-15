@@ -20,7 +20,7 @@
     <!-- Spring Boot dependencies -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
+      <artifactId>spring-boot-starter-webmvc</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -59,10 +59,6 @@
       <artifactId>jackson-databind-nullable</artifactId>
       <version>${jackson-databind-nullable.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-    </dependency>
 
     <!-- Cache dependencies -->
     <dependency>
@@ -74,8 +70,9 @@
       <artifactId>spring-boot-starter-data-redis</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jdk8</artifactId>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>3.0.4</version>
     </dependency>
 
     <!-- Micrometer dependencies -->
@@ -92,11 +89,6 @@
     </dependency>
 
     <!-- Other dependencies -->
-    <dependency>
-      <groupId>io.github.openfeign</groupId>
-      <artifactId>feign-jackson</artifactId>
-      <version>${feign-jackson.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
@@ -138,6 +130,21 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webmvc-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -209,8 +216,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
           <release>${java.version}</release>
           <annotationProcessorPaths>
             <path>

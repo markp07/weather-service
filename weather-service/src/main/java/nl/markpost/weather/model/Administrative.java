@@ -13,10 +13,10 @@ public class Administrative {
   private String name;
   private String description;
   private String isoName;
-  private int order;
-  private int adminLevel;
+  private Integer order;
+  private Integer adminLevel;
   private String isoCode;
   private String wikidataId;
-  private long geonameId;
+  private Long geonameId;
 }
 

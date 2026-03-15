@@ -22,7 +22,8 @@ import nl.markpost.weather.util.ObjectMapperUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -40,6 +41,9 @@ class WeatherControllerTest {
 
   @MockitoBean
   private WeatherModelMapper weatherModelMapper;
+
+  @MockitoBean
+  private CacheManager cacheManager;
 
   @Autowired
   private MockMvc mockMvc;

@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.impl.DefaultClaims;
 import java.util.HashMap;
@@ -27,8 +27,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -42,6 +43,9 @@ class LocationsControllerTest {
 
   @MockitoBean
   private LocationsService locationsService;
+
+  @MockitoBean
+  private CacheManager cacheManager;
 
   @Autowired
   private MockMvc mockMvc;
@@ -150,7 +154,7 @@ class LocationsControllerTest {
     ReorderRequest reorderRequest = new ReorderRequest();
     reorderRequest.setLocationIds(List.of(3L, 1L, 2L));
 
-    doNothing().when(locationsService).reorderLocations(eq(userId), eq(List.of(3L, 1L, 2L)));
+    doNothing().when(locationsService).reorderLocations(userId, List.of(3L, 1L, 2L));
 
     mockMvc.perform(put("/v1/saved-locations/reorder")
             .with(addJwtClaims())
