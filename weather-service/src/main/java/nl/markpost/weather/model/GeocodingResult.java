@@ -1,6 +1,8 @@
 package nl.markpost.weather.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serial;
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +13,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GeocodingResult {
+public class GeocodingResult implements Serializable {
+
+  @Serial
+  private static final long serialVersionUID = 1L;
 
   private Long id;
 

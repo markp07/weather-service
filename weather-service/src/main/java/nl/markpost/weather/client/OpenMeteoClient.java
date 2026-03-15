@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 /**
  * Client for calling the Open-Meteo weather API.
  */
-@FeignClient(name = "openMeteoClient", url = "https://api.open-meteo.com")
+@FeignClient(name = "openMeteoClient", url = "${open-meteo.url}")
 public interface OpenMeteoClient {
 
   /**
