@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb-it
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  cache:
+    type: simple
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+security:
+  excluded-paths: /actuator/health,/actuator/info,/swagger-ui.html,/swagger-ui/**,/*/api-docs,/v1/forecast,/v1/saved-locations
+
+reverse-geocode:
+  api-key: test-api-key
+  # url is set dynamically in the test via @DynamicPropertySource
+
+jwt:
+  public-key-url: http://localhost/fake-public-key

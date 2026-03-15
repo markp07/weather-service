@@ -63,6 +63,12 @@ reverse-geocode:
   api-key: ${REVERSE_GEOCODE_API_KEY}
   url: https://api-bdc.io
 
+open-meteo:
+  url: https://api.open-meteo.com
+
+geocoding:
+  url: https://geocoding-api.open-meteo.com
+
 meteoalarm:
   # API key for the MeteoAlarm EDR API (https://api.meteoalarm.org/edr/v1)
   # Authentication: Authorization: Bearer <token>
@@ -122,6 +128,8 @@ spring:
     hibernate:
       ddl-auto: create-drop
     database-platform: org.hibernate.dialect.H2Dialect
+open-meteo:
+  url: https://api.open-meteo.com
 
 security:
   excluded-paths: /actuator/health,/actuator/info,/swagger-ui.html,/swagger-ui/**,/*/api-docs,/v1/forecast,/v1/saved-locations

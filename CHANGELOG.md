@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.1] - 2026-03-15
+
+### Changed
+- chore(maven)(deps): bump the maven-dependencies group across 1 directory with 14 updates (#36)
+
+
+## [1.10.0] - 2026-03-15
+
+### Changed
+- Refactor dependencies, and optimize code (#37)
+
+
+## [1.9.0] - 2026-03-15
+
+### Changed
+- Upgrade to Spring Boot 4 and refactor dependencies and tests (#35)
+
+
+## [1.8.18] - 2026-03-11
+
+### Changed
+- chore(npm)(deps): bump the npm-dependencies group (#34)
+
+
+## [1.8.17] - 2026-03-05
+
+### Changed
+- chore(npm)(deps): bump the npm-dependencies group (#33)
+
+
 ## [1.8.16] - 2026-02-24
 
 ### Changed
