@@ -87,4 +87,4 @@ next-env.d.ts
 .classpath
 .factorypath
 .project
-.settings/*
+**/.settings/*
