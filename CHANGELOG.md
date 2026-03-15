@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.0] - 2026-03-15
+
+### Changed
+- Upgrade to Spring Boot 4 and refactor dependencies and tests (#35)
+
+
 ## [1.8.18] - 2026-03-11
 
 ### Changed
