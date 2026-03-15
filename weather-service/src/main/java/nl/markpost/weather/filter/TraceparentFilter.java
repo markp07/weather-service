@@ -1,13 +1,12 @@
 package nl.markpost.weather.filter;
 
-import static nl.markpost.weather.constant.Constants.TRACE_PARENT;
+import static nl.markpost.weather.common.constant.Constants.TRACE_PARENT;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
-import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.UUID;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Component;
  * Filter to extract the traceparent header from the HTTP request and set it in the MDC (Mapped
  * Diagnostic Context).
  */
-@WebFilter
 @Component
 public class TraceparentFilter implements Filter {
 
