@@ -12,12 +12,14 @@ import nl.markpost.weather.mapper.WeatherMapper;
 import nl.markpost.weather.model.ReverseGeocodeResponse;
 import nl.markpost.weather.model.Weather;
 import nl.markpost.weather.model.WeatherResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class WeatherServiceTest {
@@ -33,6 +35,13 @@ class WeatherServiceTest {
 
   @InjectMocks
   private WeatherService weatherService;
+
+  @BeforeEach
+  void setUp() {
+    // In unit tests there is no Spring proxy, so wire self to the instance itself so
+    // getWeather() can call through to the (un-cached) public methods.
+    ReflectionTestUtils.setField(weatherService, "self", weatherService);
+  }
 
   @Test
   @DisplayName("Should call OpenMeteoClient, ReverseGeocodeClient, and WeatherMapper and return mapped Weather")
