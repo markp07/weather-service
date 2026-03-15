@@ -23,7 +23,7 @@ public interface MeteoGateClient {
    * Retrieves warning features for the given country code as a GeoJSON FeatureCollection.
    *
    * @param locationId ISO 3166-1 alpha-2 country code (e.g. "NL")
-   * @param datetime   required ISO 8601 interval (e.g. "2025-01-01T00:00:00Z/2025-01-15T00:00:00Z")
+   * @param datetime   required ISO 8601 interval, must be less than 24 hours (e.g. "2026-03-15T00:00:00Z/2026-03-16T00:00:00Z")
    * @return GeoJSON FeatureCollection as a raw map
    */
   @GetMapping("/collections/warnings/locations/{locationId}")

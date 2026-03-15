@@ -62,7 +62,7 @@ public class MeteoAlarmService {
    * @param subdivision principal subdivision / province name (may be null)
    * @return the highest active WeatherAlarm level
    */
-  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + T(String).format('%.2f', T(Math).round(#latitude / 0.05) * 0.05D) + ',' + T(String).format('%.2f', T(Math).round(#longitude / 0.05) * 0.05D)")
+//  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + T(String).format('%.2f', T(Math).round(#latitude / 0.05) * 0.05D) + ',' + T(String).format('%.2f', T(Math).round(#longitude / 0.05) * 0.05D)")
   public WeatherAlarm getHighestAlarm(String countryCode, double latitude, double longitude,
       String subdivision) {
     List<MeteoAlarmWarning> warnings = filterForLocation(fetchWarnings(countryCode), latitude,
