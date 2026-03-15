@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.0] - 2026-03-15
+
+### Changed
+- Refactor dependencies, and optimize code (#37)
+
+
 ## [1.9.0] - 2026-03-15
 
 ### Changed
