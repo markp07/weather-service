@@ -11,7 +11,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cache.Cache;
+import org.springframework.cache.annotation.CachingConfigurer;
+import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -22,7 +27,9 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 
 @Configuration
 @ConditionalOnProperty(name = "spring.cache.type", havingValue = "redis")
-public class CacheConfig {
+public class CacheConfig implements CachingConfigurer {
+
+  private static final Logger log = LoggerFactory.getLogger(CacheConfig.class);
 
   /**
    * Creates a Jackson {@link ObjectMapper} configured for Redis cache serialization.
@@ -80,5 +87,48 @@ public class CacheConfig {
         .cacheDefaults(baseConfig)
         .withInitialCacheConfigurations(cacheConfigurations)
         .build();
+  }
+
+  /**
+   * Handles Redis cache errors gracefully. When a stale entry written with the old Java
+   * serializer (or any other deserialization failure) is encountered on a cache lookup,
+   * the bad entry is evicted and a cache-miss is returned so the application can
+   * recompute and repopulate the value. Other error types are logged and swallowed to
+   * prevent cache unavailability from propagating as user-visible errors.
+   */
+  @Override
+  public CacheErrorHandler errorHandler() {
+    return new CacheErrorHandler() {
+
+      @Override
+      public void handleCacheGetError(RuntimeException exception, Cache cache, Object key) {
+        log.warn("Cache get error on cache '{}' for key '{}' — evicting and treating as miss: {}",
+            cache.getName(), key, exception.getMessage());
+        try {
+          cache.evict(key);
+        } catch (RuntimeException evictException) {
+          log.warn("Failed to evict key '{}' from cache '{}': {}",
+              key, cache.getName(), evictException.getMessage());
+        }
+      }
+
+      @Override
+      public void handleCachePutError(RuntimeException exception, Cache cache, Object key,
+          Object value) {
+        log.warn("Cache put error on cache '{}' for key '{}': {}",
+            cache.getName(), key, exception.getMessage());
+      }
+
+      @Override
+      public void handleCacheEvictError(RuntimeException exception, Cache cache, Object key) {
+        log.warn("Cache evict error on cache '{}' for key '{}': {}",
+            cache.getName(), key, exception.getMessage());
+      }
+
+      @Override
+      public void handleCacheClearError(RuntimeException exception, Cache cache) {
+        log.warn("Cache clear error on cache '{}': {}", cache.getName(), exception.getMessage());
+      }
+    };
   }
 }
