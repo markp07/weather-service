@@ -50,9 +50,8 @@ weather:
 
 logging:
   level:
-    root: INFO
-    nl.markpost.weather: INFO
-    nl.markpost.weather.client.MeteoGateClient: DEBUG
+    root: DEBUG
+    nl.markpost.weather: DEBUG
 
 jwt:
   # Configure the URL to your external authentication service's public key endpoint
