@@ -228,11 +228,11 @@ public class MeteoAlarmService {
     if (!apiKeyConfigured) {
       return Collections.emptyList();
     }
-    // The datetime parameter is required by the API. Use a window from now to 14 days ahead
-    // to cover all current and upcoming warnings needed for the daily forecast display.
+    // The datetime parameter is required by the API. The API enforces a maximum window of
+    // less than 24 hours, so we use a 24-hour window to capture all currently active warnings.
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
     String datetimeParam = now.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        + "/" + now.plusDays(14).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        + "/" + now.plusHours(24).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     log.info("Fetching MeteoGate warnings for country {}", countryCode);
     try {
       Map<String, Object> body = meteoGateClient.getWarnings(upper, datetimeParam);
