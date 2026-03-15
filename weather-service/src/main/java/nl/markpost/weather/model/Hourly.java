@@ -1,5 +1,7 @@
 package nl.markpost.weather.model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +10,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Hourly {
+public class Hourly implements Serializable {
+
+  @Serial
+  private static final long serialVersionUID = 1L;
 
   private LocalDateTime time;
 
