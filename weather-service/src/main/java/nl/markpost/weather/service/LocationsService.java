@@ -3,7 +3,6 @@ package nl.markpost.weather.service;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.markpost.weather.api.v1.model.Location;
@@ -45,12 +44,12 @@ public class LocationsService {
       return Collections.emptyList();
     }
     GeocodingResponse response = geocodingClient.searchLocations(name.trim(), 5, "en", "json");
-    if (response == null || response.getResults() == null) {
+    if (response == null || response.getResults() == null || response.getResults().isEmpty()) {
       return Collections.emptyList();
     }
     return response.getResults().stream()
         .map(geocodingMapper::toLocationDto)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   /**
@@ -63,7 +62,7 @@ public class LocationsService {
     log.info("Getting saved locations for user: {}", userId);
     return savedLocationRepository.findByUserIdOrderByDisplayOrderAsc(userId).stream()
         .map(savedLocationMapper::toApiModel)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   /**
@@ -85,16 +84,17 @@ public class LocationsService {
 
     SavedLocation savedLocation = savedLocationMapper.toEntity(location);
     savedLocation.setUserId(userId);
-    
+
     // Set display order to the end (max + 1)
     List<SavedLocation> existingLocations = savedLocationRepository.findByUserIdOrderByDisplayOrderAsc(userId);
     int maxOrder = existingLocations.stream()
         .map(SavedLocation::getDisplayOrder)
         .filter(order -> order != null)
-        .max(Integer::compareTo)
+        .mapToInt(Integer::intValue)
+        .max()
         .orElse(-1);
     savedLocation.setDisplayOrder(maxOrder + 1);
-    
+
     savedLocationRepository.save(savedLocation);
     return location;
   }
@@ -120,13 +120,13 @@ public class LocationsService {
   @Transactional
   public void reorderLocations(UUID userId, List<Long> locationIds) {
     log.info("Reordering locations for user: {}", userId);
-    
+
     List<SavedLocation> savedLocations = savedLocationRepository.findByUserIdOrderByDisplayOrderAsc(userId);
-    
+
     // Create a map of locationId to SavedLocation for quick lookup
     var locationMap = savedLocations.stream()
-        .collect(Collectors.toMap(SavedLocation::getLocationId, loc -> loc));
-    
+        .collect(java.util.stream.Collectors.toMap(SavedLocation::getLocationId, loc -> loc));
+
     // Update display order based on the new order
     for (int i = 0; i < locationIds.size(); i++) {
       Long locationId = locationIds.get(i);
