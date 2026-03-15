@@ -199,7 +199,7 @@
                 <library>spring-boot</library>
                 <useSpringBoot3>true</useSpringBoot3>
                 <useTags>true</useTags>
-                <serializeModel>true</serializeModel>
+                <serializableModel>true</serializableModel>
                 <openApiNullable>false</openApiNullable>
                 <generateConstructorWithRequiredArgs>false</generateConstructorWithRequiredArgs>
                 <additionalModelTypeAnnotations>

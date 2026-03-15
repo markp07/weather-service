@@ -31,4 +31,8 @@ public class Weather implements Serializable {
 
   private List<Hourly> hourly;
 
+  private WeatherAlarm alarm;
+
+  private List<MeteoAlarmWarning> alarmWarnings;
+
 }

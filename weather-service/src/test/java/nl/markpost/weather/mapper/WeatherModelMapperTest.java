@@ -45,7 +45,9 @@ class WeatherModelMapperTest {
         5.0,
         current,
         List.of(),
-        List.of()
+        List.of(),
+        null,
+        null
     );
 
     WeatherResponse response = mapper.from(weather);
@@ -93,7 +95,8 @@ class WeatherModelMapperTest {
         20,
         WindDirection.SW,
         LocalDateTime.of(2025, Month.APRIL, 1, 6, 30),
-        LocalDateTime.of(2025, Month.APRIL, 1, 20, 15)
+        LocalDateTime.of(2025, Month.APRIL, 1, 20, 15),
+        null
     );
 
     DailyResponse response = mapper.from(daily);

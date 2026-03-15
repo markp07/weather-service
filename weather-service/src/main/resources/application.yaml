@@ -50,8 +50,8 @@ weather:
 
 logging:
   level:
-    root: INFO
-    nl.markpost.weather: INFO
+    root: DEBUG
+    nl.markpost.weather: DEBUG
 
 jwt:
   # Configure the URL to your external authentication service's public key endpoint
@@ -68,6 +68,13 @@ open-meteo:
 
 geocoding:
   url: https://geocoding-api.open-meteo.com
+
+meteoalarm:
+  # Base URL for the MeteoGate Warnings OGC API EDR
+  url: https://api.meteogate.eu/warnings
+  # API key for the MeteoGate Warnings API
+  # Authentication: Authorization: Bearer <token>
+  api-key: ${METEOALARM_API_KEY:}
 
 ---
 # Local environment profile
@@ -107,8 +114,25 @@ reverse-geocode:
   api-key: ${REVERSE_GEOCODE_API_KEY}
   url: https://api-bdc.io
 
+meteoalarm:
+  url: https://api.meteogate.eu/warnings
+  api-key: ${METEOALARM_API_KEY:}
+
+---
+# UT environment profile
+spring:
+  config:
+    activate:
+      on-profile: ut
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
 open-meteo:
   url: https://api.open-meteo.com
 
-geocoding:
-  url: https://geocoding-api.open-meteo.com
+security:
+  excluded-paths: /actuator/health,/actuator/info,/swagger-ui.html,/swagger-ui/**,/*/api-docs,/v1/forecast,/v1/saved-locations

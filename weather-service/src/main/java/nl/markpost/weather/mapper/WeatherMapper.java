@@ -34,7 +34,9 @@ public interface WeatherMapper {
       @Mapping(target = "current", source = "weather.current"),
       @Mapping(target = "location", source = "location.city"),
       @Mapping(target = "daily", expression = "java(toDailyList(weather.getDaily()))"),
-      @Mapping(target = "hourly", expression = "java(toHourlyList(weather.getHourly()))")
+      @Mapping(target = "hourly", expression = "java(toHourlyList(weather.getHourly()))"),
+      @Mapping(target = "alarm", ignore = true),
+      @Mapping(target = "alarmWarnings", ignore = true)
   })
   Weather toWeather(WeatherResponse weather, ReverseGeocodeResponse location);
 
@@ -96,7 +98,7 @@ public interface WeatherMapper {
       LocalDateTime sunSet =
           sunSets != null && i < sunSets.size() ? mapToLocalDateTime(sunSets.get(i)) : null;
       result.add(new Daily(time, weatherCode, temperatureMin, temperatureMax, precipitation,
-          precipitationProbabilityMax, windSpeed, windDirection, sunRise, sunSet));
+          precipitationProbabilityMax, windSpeed, windDirection, sunRise, sunSet, null));
     }
     return result;
   }

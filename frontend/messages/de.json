@@ -112,5 +112,21 @@
   },
   "savedLocations": {
     "weatherUnavailable": "Wetterdaten nicht verfügbar"
+  },
+  "alarm": {
+    "green": "Keine Wetterwarnung",
+    "yellow": "Gelbe Warnung: Möglicherweise gefährliches Wetter",
+    "orange": "Orangene Warnung: Erheblich gefährliches Wetter",
+    "red": "Rote Warnung: Extremes Wetter",
+    "details": "Details"
+  },
+  "alarmModal": {
+    "close": "Schließen",
+    "noDetails": "Keine Warnungsdetails verfügbar.",
+    "source": "Quelle: MeteoAlarm EDR API — Offizielle europäische Wetterwarnungsdienst (EUMETNET/MeteoGate)",
+    "severity": "Schwere",
+    "certainty": "Wahrscheinlichkeit",
+    "urgency": "Dringlichkeit",
+    "issuedBy": "Herausgegeben von"
   }
 }

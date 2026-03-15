@@ -1,11 +1,16 @@
 package nl.markpost.weather.service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import nl.markpost.weather.client.OpenMeteoClient;
 import nl.markpost.weather.client.ReverseGeocodeClient;
 import nl.markpost.weather.mapper.WeatherMapper;
+import nl.markpost.weather.model.Daily;
 import nl.markpost.weather.model.ReverseGeocodeResponse;
 import nl.markpost.weather.model.Weather;
+import nl.markpost.weather.model.WeatherAlarm;
 import nl.markpost.weather.model.WeatherResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -25,6 +30,8 @@ public class WeatherService {
 
   private final WeatherMapper weatherMapper;
 
+  private final MeteoAlarmService meteoAlarmService;
+
   /**
    * Self-reference to ensure @Cacheable proxy is invoked for internal calls.
    */
@@ -33,7 +40,8 @@ public class WeatherService {
   private WeatherService self;
 
   /**
-   * Retrieves and maps weather data for the given coordinates.
+   * Retrieves and maps weather data for the given coordinates, including official weather
+   * alarms from MeteoAlarm where available.
    */
   public Weather getWeather(double latitude, double longitude) {
     WeatherResponse dailyWeatherResponse = self.getWeatherDaily(latitude, longitude);
@@ -42,7 +50,40 @@ public class WeatherService {
     if (dailyWeatherResponse != null && hourlyWeatherResponse != null) {
       hourlyWeatherResponse.setDaily(dailyWeatherResponse.getDaily());
     }
-    return weatherMapper.toWeather(hourlyWeatherResponse, reverseGeocodeResponse);
+    Weather weather = weatherMapper.toWeather(hourlyWeatherResponse, reverseGeocodeResponse);
+    applyAlarms(weather, reverseGeocodeResponse);
+    return weather;
+  }
+
+  /**
+   * Applies official weather alarms from MeteoAlarm to the mapped Weather object.
+   * Sets the overall alarm, per-day alarms, and list of active warning details.
+   */
+  private void applyAlarms(Weather weather, ReverseGeocodeResponse location) {
+    if (weather == null || location == null || location.getCountryCode() == null) {
+      return;
+    }
+    String countryCode = location.getCountryCode();
+    double latitude = location.getLatitude();
+    double longitude = location.getLongitude();
+    String subdivision = location.getPrincipalSubdivision();
+    WeatherAlarm overallAlarm = meteoAlarmService.getHighestAlarm(countryCode, latitude, longitude,
+        subdivision);
+    weather.setAlarm(overallAlarm);
+    weather.setAlarmWarnings(
+        meteoAlarmService.getActiveWarnings(countryCode, latitude, longitude, subdivision));
+
+    if (weather.getDaily() != null && !weather.getDaily().isEmpty()) {
+      List<LocalDate> dates = weather.getDaily().stream()
+          .map(d -> d.getTime() != null ? d.getTime().toLocalDate() : null)
+          .collect(Collectors.toList());
+      List<WeatherAlarm> dailyAlarms = meteoAlarmService.getDailyAlarms(countryCode, latitude,
+          longitude, subdivision, dates);
+      List<Daily> dailyList = weather.getDaily();
+      for (int i = 0; i < dailyList.size() && i < dailyAlarms.size(); i++) {
+        dailyList.get(i).setAlarm(dailyAlarms.get(i));
+      }
+    }
   }
 
   /**

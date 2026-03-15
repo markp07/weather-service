@@ -218,6 +218,14 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    WeatherAlarmResponse:
+      type: string
+      description: Weather alarm level (comparable to European/Dutch KNMI warning system)
+      enum:
+        - GREEN
+        - YELLOW
+        - ORANGE
+        - RED
     WeatherCodeResponse:
       type: string
       description: Weather condition code
@@ -293,6 +301,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/HourlyResponse'
+        alarm:
+          $ref: '#/components/schemas/WeatherAlarmResponse'
     CurrentResponse:
       type: object
       properties:
@@ -348,6 +358,8 @@ components:
           type: string
           description: Sunset time
           example: "2025-11-04T18:00:00"
+        alarm:
+          $ref: '#/components/schemas/WeatherAlarmResponse'
     HourlyResponse:
       type: object
       properties:

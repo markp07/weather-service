@@ -112,5 +112,21 @@
   },
   "savedLocations": {
     "weatherUnavailable": "Weergegevens niet beschikbaar"
+  },
+  "alarm": {
+    "green": "Geen weerwaarschuwing",
+    "yellow": "Code geel: Mogelijk gevaarlijk weer",
+    "orange": "Code oranje: Aanzienlijk gevaarlijk weer",
+    "red": "Code rood: Extreem gevaarlijk weer",
+    "details": "Details"
+  },
+  "alarmModal": {
+    "close": "Sluiten",
+    "noDetails": "Geen waarschuwingsdetails beschikbaar.",
+    "source": "Bron: MeteoAlarm EDR API — Officiële Europese weerswaarschuwingsdienst (EUMETNET/MeteoGate)",
+    "severity": "Ernst",
+    "certainty": "Zekerheid",
+    "urgency": "Urgentie",
+    "issuedBy": "Uitgegeven door"
   }
 }

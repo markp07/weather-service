@@ -2,7 +2,7 @@
 set -e
 
 # Required environment variables (for backend)
-REQUIRED_VARS=("POSTGRES_PASSWORD" "JWT_PUBLIC_KEY_URL" "ALLOWED_ORIGIN_PATTERNS")
+REQUIRED_VARS=("POSTGRES_PASSWORD" "JWT_PUBLIC_KEY_URL" "ALLOWED_ORIGIN_PATTERNS" "METEOALARM_API_KEY")
 
 # Optional environment variables (for frontend production deployment)
 # NEXT_PUBLIC_AUTH_API_URL and NEXT_PUBLIC_WEATHER_API_URL are optional
@@ -22,6 +22,7 @@ if [ ! -f .env ]; then
     echo "   - ALLOWED_ORIGIN_PATTERNS (frontend origin for CORS)"
     echo "   - NEXT_PUBLIC_AUTH_API_URL (Authentication service URL)"
     echo "   - NEXT_PUBLIC_WEATHER_API_URL (Weather service URL)"
+    echo "   - METEOALARM_API_KEY (MeteoGate Bearer token for weather alarms)"
     echo ""
     echo "📖 See .env file for more details and examples."
     echo ""

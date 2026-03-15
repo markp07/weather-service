@@ -113,5 +113,21 @@
   },
   "savedLocations": {
     "weatherUnavailable": "Weather data unavailable"
+  },
+  "alarm": {
+    "green": "No weather alarm",
+    "yellow": "Yellow alarm: Possible adverse weather",
+    "orange": "Orange alarm: Significant adverse weather",
+    "red": "Red alarm: Extreme weather warning",
+    "details": "Details"
+  },
+  "alarmModal": {
+    "close": "Close",
+    "noDetails": "No warning details available.",
+    "source": "Source: MeteoAlarm EDR API — Official European weather warning service (EUMETNET/MeteoGate)",
+    "severity": "Severity",
+    "certainty": "Certainty",
+    "urgency": "Urgency",
+    "issuedBy": "Issued by"
   }
 }

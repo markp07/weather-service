@@ -35,4 +35,6 @@ public class Daily implements Serializable {
 
   private LocalDateTime sunSet;
 
+  private WeatherAlarm alarm;
+
 }

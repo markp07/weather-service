@@ -2,6 +2,7 @@ import React from "react";
 import { IconSearch, IconX, IconPlus, IconMapPin } from "@tabler/icons-react";
 import { useTranslations } from 'next-intl';
 import type { Location } from "../types/Location";
+import { fetchWithAuthRetry } from "../utils/api";
 
 interface LocationSearchProps {
   weatherApiBase: string;
@@ -28,9 +29,8 @@ export default function LocationSearch({ weatherApiBase, onLocationSelect, saved
     setShowResults(true);
 
     try {
-      const res = await fetch(
-        `${weatherApiBase}/api/weather/v1/search?name=${encodeURIComponent(query)}`,
-        { credentials: "include" }
+      const res = await fetchWithAuthRetry(
+        `${weatherApiBase}/api/weather/v1/search?name=${encodeURIComponent(query)}`
       );
 
       if (res.ok) {
