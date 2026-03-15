@@ -13,8 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.Bean;
@@ -87,6 +89,25 @@ public class CacheConfig implements CachingConfigurer {
         .cacheDefaults(baseConfig)
         .withInitialCacheConfigurations(cacheConfigurations)
         .build();
+  }
+
+  /**
+   * Clears all caches on application startup. This ensures stale entries from a previous
+   * deployment (e.g. entries written with a different serializer or an older data model) are
+   * removed before the application begins serving requests.
+   */
+  @Bean
+  public ApplicationRunner clearCachesOnStartup(CacheManager cacheManager) {
+    return args -> {
+      log.info("Clearing all caches on startup: {}", cacheManager.getCacheNames());
+      cacheManager.getCacheNames().forEach(name -> {
+        Cache cache = cacheManager.getCache(name);
+        if (cache != null) {
+          cache.clear();
+        }
+      });
+      log.info("All caches cleared");
+    };
   }
 
   /**
