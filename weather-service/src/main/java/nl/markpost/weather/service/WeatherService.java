@@ -60,24 +60,23 @@ public class WeatherService {
    * Sets the overall alarm, per-day alarms, and list of active warning details.
    */
   private void applyAlarms(Weather weather, ReverseGeocodeResponse location) {
-    if (weather == null || location == null || location.getCountryCode() == null) {
+    if (weather == null || location == null) {
       return;
     }
-    String countryCode = location.getCountryCode();
     double latitude = location.getLatitude();
     double longitude = location.getLongitude();
     String subdivision = location.getPrincipalSubdivision();
-    WeatherAlarm overallAlarm = meteoAlarmService.getHighestAlarm(countryCode, latitude, longitude,
+    WeatherAlarm overallAlarm = meteoAlarmService.getHighestAlarm(latitude, longitude,
         subdivision);
     weather.setAlarm(overallAlarm);
     weather.setAlarmWarnings(
-        meteoAlarmService.getActiveWarnings(countryCode, latitude, longitude, subdivision));
+        meteoAlarmService.getActiveWarnings(latitude, longitude, subdivision));
 
     if (weather.getDaily() != null && !weather.getDaily().isEmpty()) {
       List<LocalDate> dates = weather.getDaily().stream()
           .map(d -> d.getTime() != null ? d.getTime().toLocalDate() : null)
           .collect(Collectors.toList());
-      List<WeatherAlarm> dailyAlarms = meteoAlarmService.getDailyAlarms(countryCode, latitude,
+      List<WeatherAlarm> dailyAlarms = meteoAlarmService.getDailyAlarms(latitude,
           longitude, subdivision, dates);
       List<Daily> dailyList = weather.getDaily();
       for (int i = 0; i < dailyList.size() && i < dailyAlarms.size(); i++) {

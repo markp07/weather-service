@@ -85,6 +85,9 @@ public class CacheConfig implements CachingConfigurer {
     cacheConfigurations.put("weatherAlarms",
         baseConfig.entryTtl(Duration.ofMinutes(30)));
 
+    cacheConfigurations.put("weatherAlarmsAll",
+        baseConfig.entryTtl(Duration.ofMinutes(30)));
+
     return RedisCacheManager.builder(redisConnectionFactory)
         .cacheDefaults(baseConfig)
         .withInitialCacheConfigurations(cacheConfigurations)

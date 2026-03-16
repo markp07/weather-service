@@ -13,8 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 import nl.markpost.weather.client.MeteoGateClient;
 import nl.markpost.weather.model.MeteoAlarmWarning;
 import nl.markpost.weather.model.WeatherAlarm;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 /**
@@ -41,6 +43,14 @@ public class MeteoAlarmService {
   private final MeteoGateClient meteoGateClient;
   private final boolean apiKeyConfigured;
 
+  /**
+   * Self-reference injected lazily so that {@link #fetchAllWarnings()} is called through the
+   * Spring AOP proxy and therefore benefits from {@link Cacheable} caching.
+   */
+  @Autowired
+  @Lazy
+  private MeteoAlarmService self;
+
   public MeteoAlarmService(MeteoGateClient meteoGateClient,
       @Value("${meteoalarm.api-key:}") String apiKey) {
     this.meteoGateClient = meteoGateClient;
@@ -52,39 +62,53 @@ public class MeteoAlarmService {
   }
 
   /**
-   * Returns the highest active weather alarm level for the given location, or GREEN if no alarm
-   * is active or the country is not covered by MeteoGate.
-   * Uses point-in-polygon filtering (preferred) or subdivision text-matching as fallback.
+   * Fetches and caches warnings from ALL supported European countries in a single cache entry.
+   * The result is cached for 30 minutes under the "weatherAlarmsAll" cache.
+   * Callers should filter the returned list by location using {@link #filterForLocation}.
    *
-   * @param countryCode ISO 3166-1 alpha-2 country code (e.g. "NL")
+   * @return combined list of warnings from all supported countries (may be empty)
+   */
+  @Cacheable(value = "weatherAlarmsAll", key = "'all'")
+  public List<MeteoAlarmWarning> fetchAllWarnings() {
+    List<MeteoAlarmWarning> all = new ArrayList<>();
+    for (String cc : SUPPORTED_COUNTRIES) {
+      all.addAll(fetchWarnings(cc));
+    }
+    log.info("Fetched {} total warning(s) across all {} supported countries",
+        all.size(), SUPPORTED_COUNTRIES.size());
+    return all;
+  }
+
+  /**
+   * Returns the highest active weather alarm level for the given location, or GREEN if no alarm
+   * is active. Fetches alarms from all supported countries (cached globally) and filters by
+   * location using point-in-polygon (preferred) or subdivision text-matching as fallback.
+   *
    * @param latitude    user latitude for polygon-based filtering
    * @param longitude   user longitude for polygon-based filtering
    * @param subdivision principal subdivision / province name (may be null)
    * @return the highest active WeatherAlarm level
    */
-  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + T(String).format('%.2f', T(Math).round(#latitude / 0.05) * 0.05D) + ',' + T(String).format('%.2f', T(Math).round(#longitude / 0.05) * 0.05D)")
-  public WeatherAlarm getHighestAlarm(String countryCode, double latitude, double longitude,
-      String subdivision) {
-    List<MeteoAlarmWarning> warnings = filterForLocation(fetchWarnings(countryCode), latitude,
+  public WeatherAlarm getHighestAlarm(double latitude, double longitude, String subdivision) {
+    List<MeteoAlarmWarning> warnings = filterForLocation(self.fetchAllWarnings(), latitude,
         longitude, subdivision);
     return resolveHighestActive(warnings, OffsetDateTime.now(ZoneOffset.UTC));
   }
 
   /**
    * Returns a list of active warnings for each daily entry date, or null when no alarm is active
-   * on a given day. Uses point-in-polygon filtering (preferred) or subdivision text-matching.
+   * on a given day. Fetches alarms from all supported countries (cached globally) and filters by
+   * location using point-in-polygon (preferred) or subdivision text-matching.
    *
-   * @param countryCode ISO 3166-1 alpha-2 country code
    * @param latitude    user latitude for polygon-based filtering
    * @param longitude   user longitude for polygon-based filtering
    * @param subdivision principal subdivision / province name (may be null)
    * @param dates       list of daily dates to check alarms for
    * @return list of WeatherAlarm levels (same size as dates), null entries where no alarm is active
    */
-  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + T(String).format('%.2f', T(Math).round(#latitude / 0.05) * 0.05D) + ',' + T(String).format('%.2f', T(Math).round(#longitude / 0.05) * 0.05D) + '-daily'")
-  public List<WeatherAlarm> getDailyAlarms(String countryCode, double latitude, double longitude,
+  public List<WeatherAlarm> getDailyAlarms(double latitude, double longitude,
       String subdivision, List<LocalDate> dates) {
-    List<MeteoAlarmWarning> warnings = filterForLocation(fetchWarnings(countryCode), latitude,
+    List<MeteoAlarmWarning> warnings = filterForLocation(self.fetchAllWarnings(), latitude,
         longitude, subdivision);
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
     List<WeatherAlarm> result = new ArrayList<>();
@@ -96,19 +120,17 @@ public class MeteoAlarmService {
 
   /**
    * Returns all currently active warning objects for the given location.
-   * Uses point-in-polygon filtering (preferred) or subdivision text-matching.
-   * Returns an empty list when the country is not covered by MeteoGate or no alarms are active.
+   * Fetches alarms from all supported countries (cached globally) and filters by location.
+   * Returns an empty list when no alarms are active for the location.
    *
-   * @param countryCode ISO 3166-1 alpha-2 country code
    * @param latitude    user latitude for polygon-based filtering
    * @param longitude   user longitude for polygon-based filtering
    * @param subdivision principal subdivision / province name (may be null)
    * @return list of currently active MeteoAlarmWarning objects
    */
-  @Cacheable(value = "weatherAlarms", key = "#countryCode + ':' + T(String).format('%.2f', T(Math).round(#latitude / 0.05) * 0.05D) + ',' + T(String).format('%.2f', T(Math).round(#longitude / 0.05) * 0.05D) + '-active'")
-  public List<MeteoAlarmWarning> getActiveWarnings(String countryCode, double latitude,
+  public List<MeteoAlarmWarning> getActiveWarnings(double latitude,
       double longitude, String subdivision) {
-    List<MeteoAlarmWarning> warnings = filterForLocation(fetchWarnings(countryCode), latitude,
+    List<MeteoAlarmWarning> warnings = filterForLocation(self.fetchAllWarnings(), latitude,
         longitude, subdivision);
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
     List<MeteoAlarmWarning> active = new ArrayList<>();
