@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.3] - 2026-03-18
+
+### Changed
+- chore(docker)(deps): bump eclipse-temurin (#38)
+
+
 ## [1.10.2] - 2026-03-18
 
 ### Changed
