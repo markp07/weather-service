@@ -14,7 +14,7 @@ export default function Footer() {
         >
           MIT License
         </a>{" "}
-        &copy; {currentYear}{" "}
+        {currentYear}{" "}
         <a
           href="https://www.markpost.nl"
           target="_blank"
