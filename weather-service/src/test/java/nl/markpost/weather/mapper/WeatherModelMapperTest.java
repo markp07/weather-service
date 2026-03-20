@@ -135,6 +135,7 @@ class WeatherModelMapperTest {
     assertEquals(10, response.getPrecipitationProbability());
     assertEquals(12, response.getWindSpeed());
     assertEquals(WindDirectionResponse.N, response.getWindDirection());
+    assertEquals(3.2, response.getUvIndex());
   }
 
   @Test
