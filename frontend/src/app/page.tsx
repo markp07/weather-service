@@ -391,7 +391,7 @@ export default function Home() {
                               {getWindDirectionIcon(h.windDirection, 12)}
                             </div>
                             {h.uvIndex != null && (
-                              <div className="text-[10px] sm:text-xs text-yellow-600 dark:text-yellow-400 mt-0.5 sm:mt-1">UV {h.uvIndex.toFixed(1)}</div>
+                              <div className="text-[10px] sm:text-xs text-yellow-600 dark:text-yellow-400 mt-0.5 sm:mt-1">UV {Math.round(h.uvIndex)}</div>
                             )}
                           </div>
                         )})}
