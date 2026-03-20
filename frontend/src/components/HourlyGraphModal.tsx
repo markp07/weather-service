@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslations } from 'next-intl';
-import { IconTemperature, IconDroplet, IconWind, IconArrowUp, IconArrowUpRight, IconArrowRight, IconArrowDownRight, IconArrowDown, IconArrowDownLeft, IconArrowLeft, IconArrowUpLeft } from "@tabler/icons-react";
+import { IconTemperature, IconDroplet, IconWind, IconSun, IconArrowUp, IconArrowUpRight, IconArrowRight, IconArrowDownRight, IconArrowDown, IconArrowDownLeft, IconArrowLeft, IconArrowUpLeft } from "@tabler/icons-react";
 import type { Hourly } from "../types/Hourly";
 import type { Daily } from "../types/Daily";
 import { weatherCodeMap, isNightTime } from "../types/WeatherCodeMap";
@@ -13,7 +13,7 @@ interface HourlyGraphModalProps {
   dailyData: Daily[];
 }
 
-type DataType = "temperature" | "precipitation" | "wind";
+type DataType = "temperature" | "precipitation" | "wind" | "uvIndex";
 
 // Screen width breakpoint for responsive hours per page
 const SMALL_SCREEN_BREAKPOINT = 500;
@@ -90,6 +90,8 @@ export default function HourlyGraphModal({
         return data.map((h) => h.precipitation);
       case "wind":
         return data.map((h) => h.windSpeed);
+      case "uvIndex":
+        return data.map((h) => h.uvIndex ?? 0);
     }
   };
 
@@ -136,6 +138,8 @@ export default function HourlyGraphModal({
         return t('precipitationUnit');
       case "wind":
         return t('windSpeedUnit');
+      case "uvIndex":
+        return t('uvIndexUnit');
     }
   };
 
@@ -147,6 +151,8 @@ export default function HourlyGraphModal({
         return "mm";
       case "wind":
         return "km/h";
+      case "uvIndex":
+        return "";
     }
   };
 
@@ -233,6 +239,18 @@ export default function HourlyGraphModal({
             >
               <IconWind size={24} className="sm:w-6 sm:h-6" />
               <span className="hidden sm:inline">{t('windSpeed')}</span>
+            </button>
+            <button
+              onClick={() => setDataType("uvIndex")}
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 p-3 sm:px-5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base transition-all ${
+                dataType === "uvIndex"
+                  ? "bg-blue-600 text-white shadow-lg scale-105"
+                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+              }`}
+              title={t('uvIndex')}
+            >
+              <IconSun size={24} className="sm:w-6 sm:h-6" />
+              <span className="hidden sm:inline">{t('uvIndex')}</span>
             </button>
           </div>
 
@@ -389,8 +407,8 @@ export default function HourlyGraphModal({
               )}
                 </svg>
 
-                {/* Weather Code Icons - shown for temperature and precipitation graphs */}
-                {(dataType === "temperature" || dataType === "precipitation") && (
+                {/* Weather Code Icons - shown for temperature, precipitation and UV index graphs */}
+                {(dataType === "temperature" || dataType === "precipitation" || dataType === "uvIndex") && (
                   <div className="mt-1 px-1 sm:px-2 relative" style={{ width: `${totalWidth}px`, height: '40px' }}>
                     {displayData.map((h, index) => {
                       const iconSize = viewportWidth < SMALL_SCREEN_BREAKPOINT ? 20 : 24;
@@ -403,8 +421,7 @@ export default function HourlyGraphModal({
                       } else {
                         // For line chart, position at data points
                         xPos = padding.left + (index / (values.length - 1)) * chartWidth;
-                      }
-                      return (
+                      }                      return (
                         <div 
                           key={index} 
                           className="absolute flex flex-col items-center" 

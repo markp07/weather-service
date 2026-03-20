@@ -30,6 +30,7 @@
     "dailyForecast": "14-Day Forecast",
     "now": "Now",
     "today": "Today",
+    "tomorrow": "Tomorrow",
     "loadingWeather": "Loading weather data...",
     "locationError": "Could not get location.",
     "weatherError": "Failed to load weather.",
@@ -45,6 +46,8 @@
     "precipitationUnit": "Precipitation (mm)",
     "windSpeed": "Wind Speed",
     "windSpeedUnit": "Wind Speed (km/h)",
+    "uvIndex": "UV Index",
+    "uvIndexUnit": "UV Index",
     "closeModal": "Close modal"
   },
   "weather": {

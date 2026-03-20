@@ -121,7 +121,8 @@ class WeatherModelMapperTest {
         0.0,
         10,
         12,
-        WindDirection.N
+        WindDirection.N,
+        3.2
     );
 
     HourlyResponse response = mapper.from(hourly);

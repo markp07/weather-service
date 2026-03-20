@@ -29,6 +29,7 @@
     "dailyForecast": "14-Tage-Vorhersage",
     "now": "Jetzt",
     "today": "Heute",
+    "tomorrow": "Morgen",
     "loadingWeather": "Wetterdaten werden geladen...",
     "locationError": "Standort konnte nicht abgerufen werden.",
     "weatherError": "Wetter konnte nicht geladen werden.",
@@ -44,6 +45,8 @@
     "precipitationUnit": "Niederschlag (mm)",
     "windSpeed": "Windgeschwindigkeit",
     "windSpeedUnit": "Windgeschwindigkeit (km/h)",
+    "uvIndex": "UV-Index",
+    "uvIndexUnit": "UV-Index",
     "closeModal": "Modal schließen"
   },
   "weather": {

@@ -119,6 +119,7 @@ public interface WeatherMapper {
     List<Double> precipSums = hourly.getPrecipitation();
     List<Integer> windSpeeds = hourly.getWind_speed_10m();
     List<Integer> windDirections = hourly.getWind_direction_10m();
+    List<Double> uvIndexValues = hourly.getUv_index();
     List<Hourly> result = new ArrayList<>();
     int size = times != null ? times.size() : 0;
     LocalDateTime now = LocalDateTime.now();
@@ -144,8 +145,9 @@ public interface WeatherMapper {
       int windSpeed = windSpeeds != null && i < windSpeeds.size() ? windSpeeds.get(i) : 0;
       WindDirection windDirection = windDirections != null && i < windDirections.size()
           ? WindDirection.fromDegree(windDirections.get(i)) : WindDirection.N;
+      double uvIndex = uvIndexValues != null && i < uvIndexValues.size() ? uvIndexValues.get(i) : 0.0;
       result.add(new Hourly(time, weatherCode, temperature, precipitation, precipitationProbability,
-          windSpeed, windDirection));
+          windSpeed, windDirection, uvIndex));
     }
     return result;
   }
