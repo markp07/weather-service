@@ -7,6 +7,7 @@ import Sidebar from "../components/Sidebar";
 import HourlyGraphModal from "../components/HourlyGraphModal";
 import LocationBar from "../components/LocationBar";
 import LocationEditModal from "../components/LocationEditModal";
+import Footer from "../components/Footer";
 import { IconArrowUp, IconArrowUpLeft, IconArrowUpRight, IconArrowDown, IconArrowDownLeft, IconArrowDownRight, IconArrowRight, IconArrowLeft } from "@tabler/icons-react";
 import { Sun, Crosshair, GraphUp, Wind } from 'react-bootstrap-icons';
 import type { Weather } from "../types/Weather";
@@ -451,6 +452,7 @@ export default function Home() {
                 )}
               </div>
         ) : null}
+        <Footer />
       </main>
 
       {/* Hourly Graph Modal */}
