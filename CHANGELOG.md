@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.4] - 2026-03-20
+
+### Changed
+- Add footer with license and data attribution to main page (#40)
+
+
 ## [1.10.3] - 2026-03-18
 
 ### Changed
