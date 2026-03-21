@@ -41,6 +41,7 @@ class WeatherServiceTest {
     // In unit tests there is no Spring proxy, so wire self to the instance itself so
     // getWeather() can call through to the (un-cached) public methods.
     ReflectionTestUtils.setField(weatherService, "self", weatherService);
+    ReflectionTestUtils.setField(weatherService, "defaultLanguage", "en");
   }
 
   @Test
@@ -54,17 +55,37 @@ class WeatherServiceTest {
 
     when(openMeteoClient.getWeatherDaily(latitude, longitude)).thenReturn(weatherResponse);
     when(openMeteoClient.getWeatherHourly(latitude, longitude)).thenReturn(weatherResponse);
-    when(reverseGeocodeClient.getLocation(latitude, longitude)).thenReturn(reverseGeocodeResponse);
+    when(reverseGeocodeClient.getLocation(latitude, longitude, "nl")).thenReturn(reverseGeocodeResponse);
     when(weatherMapper.toWeather(weatherResponse, reverseGeocodeResponse)).thenReturn(
         expectedWeather);
 
-    Weather result = weatherService.getWeather(latitude, longitude);
+    Weather result = weatherService.getWeather(latitude, longitude, "nl");
 
     assertSame(expectedWeather, result);
     verify(openMeteoClient).getWeatherDaily(latitude, longitude);
     verify(openMeteoClient).getWeatherHourly(latitude, longitude);
-    verify(reverseGeocodeClient).getLocation(latitude, longitude);
+    verify(reverseGeocodeClient).getLocation(latitude, longitude, "nl");
     verify(weatherMapper).toWeather(weatherResponse, reverseGeocodeResponse);
+  }
+
+  @Test
+  @DisplayName("Should use configured default language when language is null")
+  void getWeather_nullLanguageFallsBackToDefault() {
+    double latitude = 52.0;
+    double longitude = 4.0;
+    WeatherResponse weatherResponse = mock(WeatherResponse.class);
+    ReverseGeocodeResponse reverseGeocodeResponse = mock(ReverseGeocodeResponse.class);
+    Weather expectedWeather = mock(Weather.class);
+
+    when(openMeteoClient.getWeatherDaily(latitude, longitude)).thenReturn(weatherResponse);
+    when(openMeteoClient.getWeatherHourly(latitude, longitude)).thenReturn(weatherResponse);
+    when(reverseGeocodeClient.getLocation(latitude, longitude, "en")).thenReturn(reverseGeocodeResponse);
+    when(weatherMapper.toWeather(weatherResponse, reverseGeocodeResponse)).thenReturn(expectedWeather);
+
+    Weather result = weatherService.getWeather(latitude, longitude, null);
+
+    assertSame(expectedWeather, result);
+    verify(reverseGeocodeClient).getLocation(latitude, longitude, "en");
   }
 
   @Test
@@ -74,13 +95,13 @@ class WeatherServiceTest {
     double longitude = 4.0;
     when(openMeteoClient.getWeatherDaily(latitude, longitude)).thenReturn(null);
     when(openMeteoClient.getWeatherHourly(latitude, longitude)).thenReturn(null);
-    when(reverseGeocodeClient.getLocation(latitude, longitude)).thenReturn(null);
+    when(reverseGeocodeClient.getLocation(latitude, longitude, "en")).thenReturn(null);
     when(weatherMapper.toWeather(null, null)).thenReturn(null);
-    Weather result = weatherService.getWeather(latitude, longitude);
+    Weather result = weatherService.getWeather(latitude, longitude, "en");
     assertNull(result);
     verify(openMeteoClient).getWeatherDaily(latitude, longitude);
     verify(openMeteoClient).getWeatherHourly(latitude, longitude);
-    verify(reverseGeocodeClient).getLocation(latitude, longitude);
+    verify(reverseGeocodeClient).getLocation(latitude, longitude, "en");
     verify(weatherMapper).toWeather(null, null);
   }
 
@@ -94,14 +115,14 @@ class WeatherServiceTest {
     Weather expectedWeather = mock(Weather.class);
     when(openMeteoClient.getWeatherDaily(latitude, longitude)).thenReturn(null);
     when(openMeteoClient.getWeatherHourly(latitude, longitude)).thenReturn(hourlyWeatherResponse);
-    when(reverseGeocodeClient.getLocation(latitude, longitude)).thenReturn(reverseGeocodeResponse);
+    when(reverseGeocodeClient.getLocation(latitude, longitude, "en")).thenReturn(reverseGeocodeResponse);
     when(weatherMapper.toWeather(hourlyWeatherResponse, reverseGeocodeResponse)).thenReturn(
         expectedWeather);
-    Weather result = weatherService.getWeather(latitude, longitude);
+    Weather result = weatherService.getWeather(latitude, longitude, "en");
     assertSame(expectedWeather, result);
     verify(openMeteoClient).getWeatherDaily(latitude, longitude);
     verify(openMeteoClient).getWeatherHourly(latitude, longitude);
-    verify(reverseGeocodeClient).getLocation(latitude, longitude);
+    verify(reverseGeocodeClient).getLocation(latitude, longitude, "en");
     verify(weatherMapper).toWeather(hourlyWeatherResponse, reverseGeocodeResponse);
   }
 
@@ -115,13 +136,13 @@ class WeatherServiceTest {
     Weather expectedWeather = mock(Weather.class);
     when(openMeteoClient.getWeatherDaily(latitude, longitude)).thenReturn(dailyWeatherResponse);
     when(openMeteoClient.getWeatherHourly(latitude, longitude)).thenReturn(null);
-    when(reverseGeocodeClient.getLocation(latitude, longitude)).thenReturn(reverseGeocodeResponse);
+    when(reverseGeocodeClient.getLocation(latitude, longitude, "en")).thenReturn(reverseGeocodeResponse);
     when(weatherMapper.toWeather(null, reverseGeocodeResponse)).thenReturn(expectedWeather);
-    Weather result = weatherService.getWeather(latitude, longitude);
+    Weather result = weatherService.getWeather(latitude, longitude, "en");
     assertSame(expectedWeather, result);
     verify(openMeteoClient).getWeatherDaily(latitude, longitude);
     verify(openMeteoClient).getWeatherHourly(latitude, longitude);
-    verify(reverseGeocodeClient).getLocation(latitude, longitude);
+    verify(reverseGeocodeClient).getLocation(latitude, longitude, "en");
     verify(weatherMapper).toWeather(null, reverseGeocodeResponse);
   }
 
@@ -135,13 +156,13 @@ class WeatherServiceTest {
     Weather expectedWeather = mock(Weather.class);
     when(openMeteoClient.getWeatherDaily(latitude, longitude)).thenReturn(dailyWeatherResponse);
     when(openMeteoClient.getWeatherHourly(latitude, longitude)).thenReturn(hourlyWeatherResponse);
-    when(reverseGeocodeClient.getLocation(latitude, longitude)).thenReturn(null);
+    when(reverseGeocodeClient.getLocation(latitude, longitude, "en")).thenReturn(null);
     when(weatherMapper.toWeather(hourlyWeatherResponse, null)).thenReturn(expectedWeather);
-    Weather result = weatherService.getWeather(latitude, longitude);
+    Weather result = weatherService.getWeather(latitude, longitude, "en");
     assertSame(expectedWeather, result);
     verify(openMeteoClient).getWeatherDaily(latitude, longitude);
     verify(openMeteoClient).getWeatherHourly(latitude, longitude);
-    verify(reverseGeocodeClient).getLocation(latitude, longitude);
+    verify(reverseGeocodeClient).getLocation(latitude, longitude, "en");
     verify(weatherMapper).toWeather(hourlyWeatherResponse, null);
   }
 
@@ -155,13 +176,13 @@ class WeatherServiceTest {
     ReverseGeocodeResponse reverseGeocodeResponse = mock(ReverseGeocodeResponse.class);
     when(openMeteoClient.getWeatherDaily(latitude, longitude)).thenReturn(dailyWeatherResponse);
     when(openMeteoClient.getWeatherHourly(latitude, longitude)).thenReturn(hourlyWeatherResponse);
-    when(reverseGeocodeClient.getLocation(latitude, longitude)).thenReturn(reverseGeocodeResponse);
+    when(reverseGeocodeClient.getLocation(latitude, longitude, "en")).thenReturn(reverseGeocodeResponse);
     when(weatherMapper.toWeather(hourlyWeatherResponse, reverseGeocodeResponse)).thenReturn(null);
-    Weather result = weatherService.getWeather(latitude, longitude);
+    Weather result = weatherService.getWeather(latitude, longitude, "en");
     assertNull(result);
     verify(openMeteoClient).getWeatherDaily(latitude, longitude);
     verify(openMeteoClient).getWeatherHourly(latitude, longitude);
-    verify(reverseGeocodeClient).getLocation(latitude, longitude);
+    verify(reverseGeocodeClient).getLocation(latitude, longitude, "en");
     verify(weatherMapper).toWeather(hourlyWeatherResponse, reverseGeocodeResponse);
   }
 

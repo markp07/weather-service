@@ -13,18 +13,12 @@ public class ReverseGeocodeFeignConfig {
   @Value("${reverse-geocode.api-key}")
   private String apiKey;
 
-  @Value("${reverse-geocode.language:en}")
-  private String language;
-
   /**
-   * Request interceptor that adds the API key and locality language as query parameters to all requests.
+   * Request interceptor that adds the API key as a query parameter to all requests.
    */
   @Bean
   public RequestInterceptor requestInterceptor() {
-    return requestTemplate -> {
-      requestTemplate.query("key", apiKey);
-      requestTemplate.query("localityLanguage", language);
-    };
+    return requestTemplate -> requestTemplate.query("key", apiKey);
   }
 }
 

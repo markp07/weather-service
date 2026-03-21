@@ -243,7 +243,7 @@ class WeatherServiceIntegrationTest {
   @Test
   @DisplayName("getLocation() result must be JDK-serializable (regression: NotSerializableException before fix)")
   void getLocation_resultMustBeJdkSerializable() {
-    ReverseGeocodeResponse response = weatherService.getLocation(52.0, 4.0);
+    ReverseGeocodeResponse response = weatherService.getLocation(52.0, 4.0, "en");
 
     assertThat(response).isNotNull();
     assertThat(response.getCity()).isEqualTo("Amsterdam");
