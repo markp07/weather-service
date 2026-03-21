@@ -5,11 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import nl.markpost.weather.model.Administrative;
 import nl.markpost.weather.model.CurrentResponse;
 import nl.markpost.weather.model.Daily;
 import nl.markpost.weather.model.DailyResponse;
 import nl.markpost.weather.model.Hourly;
 import nl.markpost.weather.model.HourlyResponse;
+import nl.markpost.weather.model.LocalityInfo;
 import nl.markpost.weather.model.ReverseGeocodeResponse;
 import nl.markpost.weather.model.Weather;
 import nl.markpost.weather.model.WeatherCode;
@@ -98,6 +100,78 @@ class WeatherMapperTest {
     assertEquals(20, h2.getPrecipitationProbability());
     assertEquals(12, h2.getWindSpeed());
     assertEquals(WindDirection.W, h2.getWindDirection());
+  }
+
+  @Test
+  @DisplayName("Should resolve location to the next administrative level when city matches an entry")
+  void resolveLocation_returnsNextAdministrativeLevel() {
+    Administrative municipality = new Administrative();
+    municipality.setName("Gemeente Amstelveen");
+    municipality.setOrder(3);
+
+    Administrative city = new Administrative();
+    city.setName("Amstelveen");
+    city.setOrder(4);
+
+    LocalityInfo localityInfo = new LocalityInfo();
+    localityInfo.setAdministrative(List.of(municipality, city));
+
+    ReverseGeocodeResponse location = new ReverseGeocodeResponse();
+    location.setCity("Gemeente Amstelveen");
+    location.setLocalityInfo(localityInfo);
+
+    String resolved = mapper.resolveLocation(location);
+
+    assertEquals("Amstelveen", resolved);
+  }
+
+  @Test
+  @DisplayName("Should fall back to city when there is no next administrative level")
+  void resolveLocation_fallsBackToCityWhenNoNextLevel() {
+    Administrative municipality = new Administrative();
+    municipality.setName("Amstelveen");
+    municipality.setOrder(3);
+
+    LocalityInfo localityInfo = new LocalityInfo();
+    localityInfo.setAdministrative(List.of(municipality));
+
+    ReverseGeocodeResponse location = new ReverseGeocodeResponse();
+    location.setCity("Amstelveen");
+    location.setLocalityInfo(localityInfo);
+
+    String resolved = mapper.resolveLocation(location);
+
+    assertEquals("Amstelveen", resolved);
+  }
+
+  @Test
+  @DisplayName("Should fall back to city when city does not match any administrative entry")
+  void resolveLocation_fallsBackToCityWhenNoMatch() {
+    Administrative entry = new Administrative();
+    entry.setName("Noord-Holland");
+    entry.setOrder(2);
+
+    LocalityInfo localityInfo = new LocalityInfo();
+    localityInfo.setAdministrative(List.of(entry));
+
+    ReverseGeocodeResponse location = new ReverseGeocodeResponse();
+    location.setCity("Amsterdam");
+    location.setLocalityInfo(localityInfo);
+
+    String resolved = mapper.resolveLocation(location);
+
+    assertEquals("Amsterdam", resolved);
+  }
+
+  @Test
+  @DisplayName("Should fall back to city when localityInfo is null")
+  void resolveLocation_fallsBackToCityWhenLocalityInfoNull() {
+    ReverseGeocodeResponse location = new ReverseGeocodeResponse();
+    location.setCity("Amsterdam");
+
+    String resolved = mapper.resolveLocation(location);
+
+    assertEquals("Amsterdam", resolved);
   }
 
   private static DailyResponse getDailyResponse() {

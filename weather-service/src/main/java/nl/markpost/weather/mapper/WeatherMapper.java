@@ -3,10 +3,12 @@ package nl.markpost.weather.mapper;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import nl.markpost.weather.model.Administrative;
 import nl.markpost.weather.model.Daily;
 import nl.markpost.weather.model.DailyResponse;
 import nl.markpost.weather.model.Hourly;
 import nl.markpost.weather.model.HourlyResponse;
+import nl.markpost.weather.model.LocalityInfo;
 import nl.markpost.weather.model.ReverseGeocodeResponse;
 import nl.markpost.weather.model.Weather;
 import nl.markpost.weather.model.WeatherCode;
@@ -32,7 +34,7 @@ public interface WeatherMapper {
       @Mapping(target = "timezone", source = "weather.timezone"),
       @Mapping(target = "elevation", source = "weather.elevation"),
       @Mapping(target = "current", source = "weather.current"),
-      @Mapping(target = "location", source = "location.city"),
+      @Mapping(target = "location", expression = "java(resolveLocation(location))"),
       @Mapping(target = "daily", expression = "java(toDailyList(weather.getDaily()))"),
       @Mapping(target = "hourly", expression = "java(toHourlyList(weather.getHourly()))")
   })
@@ -54,6 +56,37 @@ public interface WeatherMapper {
       return LocalDateTime.parse(value + "T00:00:00");
     }
     return LocalDateTime.parse(value);
+  }
+
+  /**
+   * Resolves the location name from a {@link ReverseGeocodeResponse}. Looks up the entry in
+   * {@code localityInfo.administrative} that matches the {@code city} field and returns the name
+   * of the next more-specific administrative level. Falls back to {@code city} when no lower level
+   * is available or when {@code localityInfo} is absent.
+   *
+   * @param location the reverse geocode response
+   * @return the resolved location name
+   */
+  default String resolveLocation(ReverseGeocodeResponse location) {
+    if (location == null) {
+      return null;
+    }
+    String city = location.getCity();
+    LocalityInfo localityInfo = location.getLocalityInfo();
+    if (localityInfo == null || localityInfo.getAdministrative() == null
+        || localityInfo.getAdministrative().isEmpty()) {
+      return city;
+    }
+    List<Administrative> admins = localityInfo.getAdministrative();
+    for (int i = 0; i < admins.size(); i++) {
+      if (city != null && city.equals(admins.get(i).getName())) {
+        if (i + 1 < admins.size()) {
+          return admins.get(i + 1).getName();
+        }
+        break;
+      }
+    }
+    return city;
   }
 
   /**
