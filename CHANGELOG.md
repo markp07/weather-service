@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.6] - 2026-03-21
+
+### Changed
+- Resolve location to next administrative level and pass user-selected language to reverse geocode API (#42)
+
+
 ## [1.10.5] - 2026-03-21
 
 ### Changed
