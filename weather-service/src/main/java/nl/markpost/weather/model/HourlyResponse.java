@@ -31,5 +31,7 @@ public class HourlyResponse implements Serializable {
   private List<Integer> wind_speed_10m;
 
   private List<Integer> wind_direction_10m;
+
+  private List<Double> uv_index;
 }
 

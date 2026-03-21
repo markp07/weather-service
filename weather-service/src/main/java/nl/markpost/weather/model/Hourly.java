@@ -29,4 +29,6 @@ public class Hourly implements Serializable {
 
   private WindDirection windDirection;
 
+  private Double uvIndex;
+
 }

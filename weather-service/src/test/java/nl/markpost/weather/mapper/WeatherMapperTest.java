@@ -90,6 +90,7 @@ class WeatherMapperTest {
     assertEquals(10, h1.getPrecipitationProbability());
     assertEquals(8, h1.getWindSpeed());
     assertEquals(WindDirection.SW, h1.getWindDirection());
+    assertEquals(3.5, h1.getUvIndex());
     Hourly h2 = weather.getHourly().get(1);
     assertEquals(LocalDateTime.parse("2025-07-23T14:00:00"), h2.getTime());
     assertEquals(WeatherCode.RAIN_SHOWERS_SLIGHT, h2.getWeatherCode());
@@ -98,6 +99,7 @@ class WeatherMapperTest {
     assertEquals(20, h2.getPrecipitationProbability());
     assertEquals(12, h2.getWindSpeed());
     assertEquals(WindDirection.W, h2.getWindDirection());
+    assertEquals(5.0, h2.getUvIndex());
   }
 
   private static DailyResponse getDailyResponse() {
@@ -124,6 +126,7 @@ class WeatherMapperTest {
     hourlyResponse.setPrecipitation(List.of(0.5, 1.0));
     hourlyResponse.setWind_speed_10m(List.of(8, 12));
     hourlyResponse.setWind_direction_10m(List.of(225, 270)); // SW and W
+    hourlyResponse.setUv_index(List.of(3.5, 5.0));
     return hourlyResponse;
   }
 

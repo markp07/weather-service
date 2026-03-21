@@ -390,6 +390,9 @@ export default function Home() {
                               <span>{h.windSpeed}km/h</span>
                               {getWindDirectionIcon(h.windDirection, 12)}
                             </div>
+                            {h.uvIndex != null && (
+                              <div className="text-[10px] sm:text-xs text-yellow-600 dark:text-yellow-400 mt-0.5 sm:mt-1">UV {Math.round(h.uvIndex)}</div>
+                            )}
                           </div>
                         )})}
                       </div>
@@ -408,7 +411,7 @@ export default function Home() {
                           return (
                           <div key={i} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div className="flex-1 min-w-0 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                              {i === 0 ? t('today') : tDays(dayKey)}
+                              {i === 0 ? t('today') : i === 1 ? t('tomorrow') : tDays(dayKey)}
                             </div>
                             <div className="flex items-center justify-center w-8 sm:w-10 flex-shrink-0">
                               {getWeatherIcon(d.weatherCode, 28, noonTime.toISOString(), d.sunRise, d.sunSet)}

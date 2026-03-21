@@ -29,6 +29,7 @@
     "dailyForecast": "14-daagse verwachting",
     "now": "Nu",
     "today": "Vandaag",
+    "tomorrow": "Morgen",
     "loadingWeather": "Weergegevens laden...",
     "locationError": "Kan locatie niet ophalen.",
     "weatherError": "Weer laden mislukt.",
@@ -44,6 +45,8 @@
     "precipitationUnit": "Neerslag (mm)",
     "windSpeed": "Windsnelheid",
     "windSpeedUnit": "Windsnelheid (km/u)",
+    "uvIndex": "UV-index",
+    "uvIndexUnit": "UV-index",
     "closeModal": "Sluit venster"
   },
   "weather": {

@@ -6,4 +6,5 @@ export interface Hourly {
   precipitation: number;
   windSpeed: number;
   windDirection: string;
+  uvIndex: number;
 }
