@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.5] - 2026-03-21
+
+### Changed
+- Add UV index to hourly view/graph and "Tomorrow" label to daily forecast (#41)
+
+
 ## [1.10.4] - 2026-03-20
 
 ### Changed
