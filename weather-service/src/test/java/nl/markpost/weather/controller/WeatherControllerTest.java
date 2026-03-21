@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
@@ -75,7 +76,7 @@ class WeatherControllerTest {
     apiWeather.setTimezone("Europe/Berlin");
     apiWeather.setElevation(10.0);
 
-    when(weatherService.getWeather(52.0, 4.0)).thenReturn(weather);
+    when(weatherService.getWeather(52.0, 4.0, "en")).thenReturn(weather);
     when(weatherModelMapper.from(weather)).thenReturn(apiWeather);
 
     MvcResult result = mockMvc.perform(
@@ -103,11 +104,43 @@ class WeatherControllerTest {
   }
 
   @Test
-  @DisplayName("Should return 400 Bad Request if longitude is missing")
-  void getWeather_missingLongitude() throws Exception {
+  @DisplayName("Should pass language parameter to service when provided")
+  void getWeather_withLanguage() throws Exception {
+    Weather weather = new Weather(
+        52.0, 4.0, "Den Haag", "Europe/Berlin", 10.0,
+        new Current(LocalDateTime.of(2025, Month.APRIL, 1, 12, 0), WeatherCode.FOG, 1.0, 6, WindDirection.S),
+        List.of(), List.of()
+    );
+    WeatherResponse apiWeather = new WeatherResponse();
+    apiWeather.setLocation("Den Haag");
+
+    when(weatherService.getWeather(52.0, 4.0, "nl")).thenReturn(weather);
+    when(weatherModelMapper.from(weather)).thenReturn(apiWeather);
+
+    MvcResult result = mockMvc.perform(
+            get("/v1/forecast")
+                .param("latitude", "52.0")
+                .param("longitude", "4.0")
+                .param("language", "nl")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    WeatherResponse response = ObjectMapperUtil.createObjectMapper()
+        .readValue(result.getResponse().getContentAsString(), WeatherResponse.class);
+    assertEquals("Den Haag", response.getLocation());
+  }
+
+  @Test
+  @DisplayName("Should return 400 Bad Request for an unsupported language code")
+  void getWeather_invalidLanguage() throws Exception {
     mockMvc.perform(get("/v1/forecast")
-            .param("latitude", "52.0"))
-        .andExpect(status().isBadRequest());
+            .param("latitude", "52.0")
+            .param("longitude", "4.0")
+            .param("language", "invalid_lang"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.code").value("BAD_REQUEST"));
   }
 
 }

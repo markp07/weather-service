@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 )
 public interface ReverseGeocodeClient {
 
-  @GetMapping("/data/reverse-geocode?localityLanguage=en")
+  @GetMapping("/data/reverse-geocode")
   ReverseGeocodeResponse getLocation(@RequestParam("latitude") double latitude,
-      @RequestParam("longitude") double longitude);
+      @RequestParam("longitude") double longitude,
+      @RequestParam("localityLanguage") String language);
 }
 

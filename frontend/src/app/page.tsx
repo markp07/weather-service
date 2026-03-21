@@ -15,6 +15,7 @@ import type { Location } from "../types/Location";
 import { weatherCodeMap, isNightTime } from "../types/WeatherCodeMap";
 import { fetchWithRetry } from "../utils/retry";
 import { weatherCodeToTranslationKey, dayNumberToTranslationKey } from "../utils/weatherTranslations";
+import { getLocale } from "../i18n/client";
 
 const isDev = typeof window !== "undefined" && window.location.hostname === "localhost";
 const AUTH_API_BASE = isDev ? "http://localhost:3000" : process.env.NEXT_PUBLIC_AUTH_API_URL;
@@ -119,7 +120,8 @@ export default function Home() {
         }
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
-        const res = await fetchWithRetry(`${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${lat}&longitude=${lon}`);
+        const language = getLocale();
+        const res = await fetchWithRetry(`${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${lat}&longitude=${lon}&language=${language}`);
         if (res.status === 401) return "401";
         if (!res.ok) {
           setWeatherError("Failed to load weather.");
@@ -170,9 +172,10 @@ export default function Home() {
 
     async function fetchWeatherForLocation(location: Location) {
       setLoadingWeather(prev => new Set(prev).add(location.id));
+      const language = getLocale();
       try {
         const res = await fetchWithRetry(
-          `${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}`
+          `${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&language=${language}`
         );
         if (res.ok) {
           const data: Weather = await res.json();

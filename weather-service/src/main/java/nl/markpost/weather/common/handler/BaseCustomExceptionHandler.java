@@ -2,6 +2,7 @@ package nl.markpost.weather.common.handler;
 
 import static nl.markpost.weather.common.constant.Constants.TRACE_PARENT;
 
+import jakarta.validation.ConstraintViolationException;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import lombok.extern.slf4j.Slf4j;
@@ -82,6 +83,16 @@ public class BaseCustomExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   ResponseEntity<Error> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
     log.error("Invalid method argument", e);
+    return ResponseEntity.badRequest()
+        .body(createError(GenericErrorCodes.BAD_REQUEST));
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  ResponseEntity<Error> handleConstraintViolationException(ConstraintViolationException e) {
+    String violations = e.getConstraintViolations().stream()
+        .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+        .collect(java.util.stream.Collectors.joining(", "));
+    log.error("Constraint violation - {}", violations);
     return ResponseEntity.badRequest()
         .body(createError(GenericErrorCodes.BAD_REQUEST));
   }

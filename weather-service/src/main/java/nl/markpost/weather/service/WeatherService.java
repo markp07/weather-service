@@ -8,6 +8,7 @@ import nl.markpost.weather.model.ReverseGeocodeResponse;
 import nl.markpost.weather.model.Weather;
 import nl.markpost.weather.model.WeatherResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,9 @@ public class WeatherService {
 
   private final WeatherMapper weatherMapper;
 
+  @Value("${reverse-geocode.language:en}")
+  private String defaultLanguage;
+
   /**
    * Self-reference to ensure @Cacheable proxy is invoked for internal calls.
    */
@@ -34,11 +38,14 @@ public class WeatherService {
 
   /**
    * Retrieves and maps weather data for the given coordinates.
+   *
+   * @param language BCP-47 language code for city names; falls back to configured default when null
    */
-  public Weather getWeather(double latitude, double longitude) {
+  public Weather getWeather(double latitude, double longitude, String language) {
+    String lang = resolveLanguage(language);
     WeatherResponse dailyWeatherResponse = self.getWeatherDaily(latitude, longitude);
     WeatherResponse hourlyWeatherResponse = self.getWeatherHourly(latitude, longitude);
-    ReverseGeocodeResponse reverseGeocodeResponse = self.getLocation(latitude, longitude);
+    ReverseGeocodeResponse reverseGeocodeResponse = self.getLocation(latitude, longitude, lang);
     if (dailyWeatherResponse != null && hourlyWeatherResponse != null) {
       hourlyWeatherResponse.setDaily(dailyWeatherResponse.getDaily());
     }
@@ -62,11 +69,15 @@ public class WeatherService {
   }
 
   /**
-   * Retrieves the location name for the given coordinates.
+   * Retrieves the location name for the given coordinates and language, cached per coordinate+language pair.
    */
-  @Cacheable(value = "location", key = "#latitude + '-' + #longitude")
-  public ReverseGeocodeResponse getLocation(double latitude, double longitude) {
-    return reverseGeocodeClient.getLocation(latitude, longitude);
+  @Cacheable(value = "location", key = "#latitude + '-' + #longitude + '-' + #language")
+  public ReverseGeocodeResponse getLocation(double latitude, double longitude, String language) {
+    return reverseGeocodeClient.getLocation(latitude, longitude, language);
+  }
+
+  private String resolveLanguage(String language) {
+    return (language != null) ? language : defaultLanguage;
   }
 
 }

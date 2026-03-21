@@ -37,6 +37,15 @@ paths:
             type: number
             format: double
             example: 4.9041
+        - name: language
+          in: query
+          required: false
+          description: BCP-47 language code for city names (en, nl, de, fr). Defaults to en.
+          schema:
+            type: string
+            pattern: '^(en|nl|de|fr)$'
+            default: en
+            example: nl
       responses:
         '200':
           description: Weather forecast retrieved successfully

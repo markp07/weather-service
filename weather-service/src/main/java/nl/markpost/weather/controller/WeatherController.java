@@ -28,13 +28,14 @@ public class WeatherController implements WeatherApi {
    *
    * @param latitude  the latitude
    * @param longitude the longitude
+   * @param language  BCP-47 language code for city names (en, nl, de, fr); optional
    * @return ResponseEntity with weather forecast
    */
   @Override
   public ResponseEntity<WeatherResponse> getWeather(Double latitude,
-      Double longitude) {
+      Double longitude, String language) {
     log.info("Receive weather data at latitude: {}, longitude: {}", latitude, longitude);
-    Weather weather = weatherService.getWeather(latitude, longitude);
+    Weather weather = weatherService.getWeather(latitude, longitude, language);
     return ResponseEntity.ok(weatherModelMapper.from(weather));
   }
 
