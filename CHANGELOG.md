@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.11] - 2026-04-16
+
+### Changed
+- chore(maven)(deps): bump org.springdoc:springdoc-openapi-starter-webmvc-ui (#48)
+
+
 ## [1.10.10] - 2026-04-16
 
 ### Changed
