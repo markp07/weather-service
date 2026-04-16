@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/agents.schema.json",
+  "title": "AI Agent Governance Policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policyVersion",
+    "versioning",
+    "accessControl",
+    "branching",
+    "commitMessageFramework",
+    "responseContract"
+  ],
+  "properties": {
+    "policyVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "versioning": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scheme",
+        "pattern",
+        "example"
+      ],
+      "properties": {
+        "scheme": {
+          "const": "semver"
+        },
+        "pattern": {
+          "const": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "example": {
+          "const": "1.0.0"
+        }
+      }
+    },
+    "accessControl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "denyPathPatterns",
+        "allowPathPatterns",
+        "securityRules",
+        "generatedPathsReadOnly"
+      ],
+      "properties": {
+        "denyPathPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "contains": {
+            "const": "^\\.env(\\..*)?$"
+          }
+        },
+        "allowPathPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "contains": {
+            "const": "^\\.env\\.example$"
+          }
+        },
+        "securityRules": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "neverCommitSecretsOrPrivateKeys",
+              "neverLogTokensOrCredentials",
+              "doNotWeakenAuthByDefault"
+            ]
+          },
+          "allOf": [
+            {
+              "contains": {
+                "const": "neverCommitSecretsOrPrivateKeys"
+              }
+            },
+            {
+              "contains": {
+                "const": "neverLogTokensOrCredentials"
+              }
+            },
+            {
+              "contains": {
+                "const": "doNotWeakenAuthByDefault"
+              }
+            }
+          ]
+        },
+        "generatedPathsReadOnly": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "^.*/target/.*$",
+              "^.*/\\.next/.*$",
+              "^.*/coverage/.*$"
+            ]
+          },
+          "allOf": [
+            {
+              "contains": {
+                "const": "^.*/target/.*$"
+              }
+            },
+            {
+              "contains": {
+                "const": "^.*/\\.next/.*$"
+              }
+            },
+            {
+              "contains": {
+                "const": "^.*/coverage/.*$"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "branching": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allowedPrefixes",
+        "branchNamePattern",
+        "releaseIntentMapping"
+      ],
+      "properties": {
+        "allowedPrefixes": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [
+            {
+              "const": "major"
+            },
+            {
+              "const": "feature"
+            },
+            {
+              "const": "fix"
+            }
+          ],
+          "items": false
+        },
+        "branchNamePattern": {
+          "const": "^(major|feature|fix)\\/[a-z0-9][a-z0-9-]*$"
+        },
+        "releaseIntentMapping": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "major",
+            "feature",
+            "fix"
+          ],
+          "properties": {
+            "major": {
+              "const": "major"
+            },
+            "feature": {
+              "const": "minor"
+            },
+            "fix": {
+              "const": "patch"
+            }
+          }
+        },
+        "optionalBackwardCompatNoteFor": {
+          "type": "string",
+          "const": "bugfix/*"
+        }
+      }
+    },
+    "commitMessageFramework": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "standard",
+        "allowedTypes",
+        "headerPattern",
+        "breakingChangeFooter"
+      ],
+      "properties": {
+        "standard": {
+          "const": "conventional-commits"
+        },
+        "allowedTypes": {
+          "type": "array",
+          "minItems": 10,
+          "maxItems": 10,
+          "prefixItems": [
+            {
+              "const": "feat"
+            },
+            {
+              "const": "fix"
+            },
+            {
+              "const": "docs"
+            },
+            {
+              "const": "refactor"
+            },
+            {
+              "const": "test"
+            },
+            {
+              "const": "chore"
+            },
+            {
+              "const": "build"
+            },
+            {
+              "const": "ci"
+            },
+            {
+              "const": "perf"
+            },
+            {
+              "const": "revert"
+            }
+          ],
+          "items": false
+        },
+        "headerPattern": {
+          "const": "^(feat|fix|docs|refactor|test|chore|build|ci|perf|revert)(\\([a-z0-9-]+\\))?(!)?: [^\\s].*[^\\.]$"
+        },
+        "breakingChangeFooter": {
+          "const": "BREAKING CHANGE:"
+        }
+      }
+    },
+    "responseContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sectionsInOrder",
+        "orderEnforced"
+      ],
+      "properties": {
+        "sectionsInOrder": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "prefixItems": [
+            {
+              "const": "Plan"
+            },
+            {
+              "const": "Changes"
+            },
+            {
+              "const": "Validation"
+            },
+            {
+              "const": "Risks/Assumptions"
+            },
+            {
+              "const": "Next Steps"
+            }
+          ],
+          "items": false
+        },
+        "orderEnforced": {
+          "const": true
+        }
+      }
+    }
+  }
+}
