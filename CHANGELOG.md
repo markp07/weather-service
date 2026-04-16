@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.12] - 2026-04-16
+
+### Changed
+- Establish machine-readable AI agent governance with enforced schema validation (#50)
+
+
 ## [1.10.11] - 2026-04-16
 
 ### Changed
