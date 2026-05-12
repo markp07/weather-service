@@ -1,5 +1,5 @@
 # Use official Node.js image for building
-FROM node:25-alpine AS builder
+FROM node:26-alpine AS builder
 WORKDIR /app
 
 # Accept build arguments for Next.js public environment variables
@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 
 # Production image
-FROM node:25-alpine
+FROM node:26-alpine
 WORKDIR /app
 COPY --from=builder /app .
 EXPOSE 3030
