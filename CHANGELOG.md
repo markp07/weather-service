@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.14] - 2026-05-12
+
+### Changed
+- chore(npm)(deps): bump the npm-dependencies group across 1 directory with 12 updates (#58)
+- chore(docker)(deps): bump node (#57)
+
+
 ## [1.10.13] - 2026-04-28
 
 ### Changed
