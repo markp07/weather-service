@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.15] - 2026-05-12
+
+### Changed
+- chore(maven)(deps): bump org.openapitools:openapi-generator-maven-plugin (#55)
+
+
 ## [1.10.14] - 2026-05-12
 
 ### Changed
