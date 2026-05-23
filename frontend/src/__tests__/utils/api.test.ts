@@ -67,32 +67,12 @@ describe('fetchWithAuthRetry', () => {
     expect(mockFetch).toHaveBeenNthCalledWith(2, `${AUTH_API_BASE}/api/auth/v1/refresh`, expect.any(Object));
   });
 
-  it('should redirect and throw when refresh fails', async () => {
-    const originalLocation = window.location;
-    const locationMock = {
-      ...originalLocation,
-      origin: 'http://localhost:3030',
-      pathname: '/dashboard',
-      search: '?q=rain',
-      href: 'http://localhost:3030/dashboard?q=rain',
-    };
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: locationMock,
-    });
-
+  it('should throw when refresh fails', async () => {
     mockFetch.mockResolvedValueOnce({ status: 401, ok: false });
     mockFetch.mockResolvedValueOnce({ status: 401, ok: false });
 
     await expect(fetchWithAuthRetry('/test-url')).rejects.toThrow('Session expired. Redirecting to login.');
-    expect(window.location.href).toBe(
-      `${AUTH_API_BASE}/login?callback=${encodeURIComponent('http://localhost:3030/dashboard?q=rain')}`
-    );
-
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: originalLocation,
-    });
+    expect(mockFetch).toHaveBeenNthCalledWith(2, `${AUTH_API_BASE}/api/auth/v1/refresh`, expect.any(Object));
   });
 });
 

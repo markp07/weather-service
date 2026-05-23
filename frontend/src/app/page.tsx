@@ -112,7 +112,11 @@ export default function Home() {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
         const language = getLocale();
-        const res = await fetchWithAuthRetry(`${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${lat}&longitude=${lon}&language=${language}`);
+        const res = await fetchWithAuthRetry(
+          `${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${lat}&longitude=${lon}&language=${language}`,
+          undefined,
+          { retry5xx: true }
+        );
         if (res.status === 401) {
           setLoggedIn(false);
           setShowWeather(false);
@@ -168,7 +172,9 @@ export default function Home() {
       const language = getLocale();
       try {
         const res = await fetchWithAuthRetry(
-          `${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&language=${language}`
+          `${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&language=${language}`,
+          undefined,
+          { retry5xx: true }
         );
         if (res.status === 401) {
           setLoggedIn(false);

@@ -20,16 +20,28 @@ function redirectToLogin() {
 }
 
 export async function refreshAuthToken(): Promise<boolean> {
-  const refreshRes = await fetchWithRetry(`${AUTH_API_BASE}/api/auth/v1/refresh`, { method: "POST" });
+  const refreshRes = await fetch(`${AUTH_API_BASE}/api/auth/v1/refresh`, { method: "POST", credentials: "include" });
   return refreshRes.ok;
+}
+
+async function fetchRequest(input: RequestInfo, init?: RequestInit, retry5xx = false): Promise<Response> {
+  if (retry5xx) {
+    return fetchWithRetry(input, init);
+  }
+  return fetch(input, { ...init, credentials: "include" });
 }
 
 /**
  * Generic fetch utility that retries on 401 by refreshing the token, then retries the original request.
  * If refresh also fails with 401, redirects to auth service login with callback URL.
  */
-export async function fetchWithAuthRetry(input: RequestInfo, init?: RequestInit): Promise<Response> {
-  let res = await fetchWithRetry(input, init);
+export async function fetchWithAuthRetry(
+  input: RequestInfo,
+  init?: RequestInit,
+  options: { retry5xx?: boolean } = {}
+): Promise<Response> {
+  const { retry5xx = false } = options;
+  let res = await fetchRequest(input, init, retry5xx);
   if (res.status !== 401) return res;
 
   const refreshSucceeded = await refreshAuthToken();
@@ -38,7 +50,7 @@ export async function fetchWithAuthRetry(input: RequestInfo, init?: RequestInit)
     throw new Error("Session expired. Redirecting to login.");
   }
 
-  res = await fetchWithRetry(input, init);
+  res = await fetchRequest(input, init, retry5xx);
   return res;
 }
 
