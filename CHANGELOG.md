@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.18] - 2026-05-23
+
+### Changed
+- Fix Redis cache serialization failure & flush stale caches on startup (#61)
+
+
 ## [1.10.17] - 2026-05-23
 
 ### Changed
