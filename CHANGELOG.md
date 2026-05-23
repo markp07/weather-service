@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.17] - 2026-05-23
+
+### Changed
+- chore(maven)(deps): bump org.apache.maven.plugins:maven-enforcer-plugin (#59)
+
+
 ## [1.10.16] - 2026-05-23
 
 ### Changed
