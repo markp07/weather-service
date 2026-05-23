@@ -1,3 +1,5 @@
+import { fetchWithRetry } from "./retry";
+
 // Centralized API base URL and fetchWithAuthRetry utility
 
 export const isDev = typeof window !== "undefined" && window.location.hostname === "localhost";
@@ -8,26 +10,35 @@ export const isDev = typeof window !== "undefined" && window.location.hostname =
 export const AUTH_API_BASE = isDev ? "http://localhost:3000" : (process.env.NEXT_PUBLIC_AUTH_API_URL || "https://auth.yourdomain.tld");
 export const WEATHER_API_BASE = isDev ? "http://localhost:13001" : (process.env.NEXT_PUBLIC_WEATHER_API_URL || "https://weather.yourdomain.tld");
 
+function redirectToLogin() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const callbackUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+  window.location.href = `${AUTH_API_BASE}/login?callback=${encodeURIComponent(callbackUrl)}`;
+}
+
+export async function refreshAuthToken(): Promise<boolean> {
+  const refreshRes = await fetchWithRetry(`${AUTH_API_BASE}/api/auth/v1/refresh`, { method: "POST" });
+  return refreshRes.ok;
+}
+
 /**
  * Generic fetch utility that retries on 401 by refreshing the token, then retries the original request.
  * If refresh also fails with 401, redirects to auth service login with callback URL.
  */
 export async function fetchWithAuthRetry(input: RequestInfo, init?: RequestInit): Promise<Response> {
-  let res = await fetch(input, { ...init, credentials: "include" });
+  let res = await fetchWithRetry(input, init);
   if (res.status !== 401) return res;
 
-  // Try to refresh token from auth service
-  const refreshRes = await fetch(`${AUTH_API_BASE}/api/auth/v1/refresh`, { method: "POST", credentials: "include" });
-  if (refreshRes.status === 401) {
-    // Redirect to auth service login with callback URL
-    if (typeof window !== "undefined") {
-      const callbackUrl = `${window.location.origin}${window.location.pathname}`;
-      window.location.href = `${AUTH_API_BASE}/login?callback=${encodeURIComponent(callbackUrl)}`;
-    }
+  const refreshSucceeded = await refreshAuthToken();
+  if (!refreshSucceeded) {
+    redirectToLogin();
     throw new Error("Session expired. Redirecting to login.");
   }
-  // Retry original request
-  res = await fetch(input, { ...init, credentials: "include" });
+
+  res = await fetchWithRetry(input, init);
   return res;
 }
 
@@ -78,4 +89,3 @@ export async function reorderSavedLocations(locationIds: number[]) {
     throw new Error("Failed to reorder saved locations");
   }
 }
-
