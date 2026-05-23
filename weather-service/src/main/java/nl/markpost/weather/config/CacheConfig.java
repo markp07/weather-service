@@ -5,7 +5,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -16,6 +21,7 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 
 @Configuration
 @ConditionalOnProperty(name = "spring.cache.type", havingValue = "redis")
+@Slf4j
 public class CacheConfig {
 
   @Bean
@@ -50,5 +56,19 @@ public class CacheConfig {
     return RedisCacheManager.builder(redisConnectionFactory)
         .withInitialCacheConfigurations(cacheConfigurations)
         .build();
+  }
+
+  @Bean
+  public ApplicationListener<ApplicationReadyEvent> cacheFlushOnStartup(CacheManager cacheManager) {
+    return event -> {
+      log.info("Flushing all caches on application startup");
+      cacheManager.getCacheNames().forEach(name -> {
+        Cache cache = cacheManager.getCache(name);
+        if (cache != null) {
+          cache.clear();
+        }
+      });
+      log.info("All caches flushed successfully");
+    };
   }
 }
