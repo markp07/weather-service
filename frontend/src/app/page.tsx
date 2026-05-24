@@ -13,13 +13,11 @@ import { Sun, Crosshair, GraphUp, Wind } from 'react-bootstrap-icons';
 import type { Weather } from "../types/Weather";
 import type { Location } from "../types/Location";
 import { weatherCodeMap, isNightTime } from "../types/WeatherCodeMap";
-import { fetchWithRetry } from "../utils/retry";
+import { AUTH_API_BASE, WEATHER_API_BASE, fetchWithAuthRetry } from "../utils/api";
 import { weatherCodeToTranslationKey, dayNumberToTranslationKey } from "../utils/weatherTranslations";
 import { getLocale } from "../i18n/client";
 
 const isDev = typeof window !== "undefined" && window.location.hostname === "localhost";
-const AUTH_API_BASE = isDev ? "http://localhost:3000" : process.env.NEXT_PUBLIC_AUTH_API_URL;
-const WEATHER_API_BASE = isDev ? "http://localhost:13001" : process.env.NEXT_PUBLIC_WEATHER_API_URL;
 
 function getWeatherIcon(code: string, size = 32, currentTime?: string, sunRise?: string, sunSet?: string) {
   const isNight = currentTime && sunRise && sunSet ? isNightTime(currentTime, sunRise, sunSet) : false;
@@ -76,14 +74,7 @@ export default function Home() {
   React.useEffect(() => {
     async function checkLogin() {
       try {
-        let res = await fetch(`${AUTH_API_BASE}/api/auth/v1/user`, { credentials: "include" });
-        if (res.status === 401) {
-          // Try refresh token
-          const refreshRes = await fetch(`${AUTH_API_BASE}/api/auth/v1/refresh`, { method: "POST", credentials: "include" });
-          if (refreshRes.ok) {
-            res = await fetch(`${AUTH_API_BASE}/api/auth/v1/user`, { credentials: "include" });
-          }
-        }
+        const res = await fetchWithAuthRetry(`${AUTH_API_BASE}/api/auth/v1/user`);
         setLoggedIn(res.ok);
         if (res.ok) {
           const data = await res.json();
@@ -121,8 +112,18 @@ export default function Home() {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
         const language = getLocale();
-        const res = await fetchWithRetry(`${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${lat}&longitude=${lon}&language=${language}`);
-        if (res.status === 401) return "401";
+        const res = await fetchWithAuthRetry(
+          `${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${lat}&longitude=${lon}&language=${language}`,
+          undefined,
+          { retry5xx: true }
+        );
+        if (res.status === 401) {
+          setLoggedIn(false);
+          setShowWeather(false);
+          setWeather(null);
+          router.push("/login?callback=" + encodeURIComponent("/"));
+          return false;
+        }
         if (!res.ok) {
           setWeatherError("Failed to load weather.");
           setShowWeather(false);
@@ -133,14 +134,10 @@ export default function Home() {
         setWeatherError(null);
         return true;
       }
-      let result = await fetchWeather();
-      if (result === "401") {
-        // Try refresh token
-        const refreshRes = await fetch(`${AUTH_API_BASE}/api/auth/v1/refresh`, { method: "POST", credentials: "include" });
-        if (refreshRes.ok) {
-          result = await fetchWeather();
-          if (result === true) return;
-        }
+      try {
+        const result = await fetchWeather();
+        if (result) return;
+      } catch {
         setLoggedIn(false);
         setShowWeather(false);
         setWeather(null);
@@ -174,9 +171,16 @@ export default function Home() {
       setLoadingWeather(prev => new Set(prev).add(location.id));
       const language = getLocale();
       try {
-        const res = await fetchWithRetry(
-          `${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&language=${language}`
+        const res = await fetchWithAuthRetry(
+          `${WEATHER_API_BASE}/api/weather/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&language=${language}`,
+          undefined,
+          { retry5xx: true }
         );
+        if (res.status === 401) {
+          setLoggedIn(false);
+          router.push("/login?callback=" + encodeURIComponent("/"));
+          return;
+        }
         if (res.ok) {
           const data: Weather = await res.json();
           setSavedWeatherData(prev => new Map(prev).set(location.id, data));
@@ -486,7 +490,7 @@ export default function Home() {
         onAddLocation={(loc) => {
           handleLocationSelect(loc);
         }}
-        weatherApiBase={WEATHER_API_BASE || "http://localhost:13001"}
+        weatherApiBase={WEATHER_API_BASE}
       />
     </div>
   );

@@ -66,6 +66,14 @@ describe('fetchWithAuthRetry', () => {
     // Verify refresh endpoint was called
     expect(mockFetch).toHaveBeenNthCalledWith(2, `${AUTH_API_BASE}/api/auth/v1/refresh`, expect.any(Object));
   });
+
+  it('should throw when refresh fails', async () => {
+    mockFetch.mockResolvedValueOnce({ status: 401, ok: false });
+    mockFetch.mockResolvedValueOnce({ status: 401, ok: false });
+
+    await expect(fetchWithAuthRetry('/test-url')).rejects.toThrow('Session expired. Redirecting to login.');
+    expect(mockFetch).toHaveBeenNthCalledWith(2, `${AUTH_API_BASE}/api/auth/v1/refresh`, expect.any(Object));
+  });
 });
 
 describe('API functions', () => {
