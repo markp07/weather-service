@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.19] - 2026-05-24
+
+### Changed
+- Centralize frontend 401 handling and token refresh across API calls (#62)
+
+
 ## [1.10.18] - 2026-05-23
 
 ### Changed
