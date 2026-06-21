@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.23] - 2026-06-21
+
+### Changed
+- chore: refactor authentication flow with reusable helpers for login redirection and callback URLs (#70)
+
+
 ## [1.10.22] - 2026-06-21
 
 ### Changed
