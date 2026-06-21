@@ -1,7 +1,18 @@
 /**
  * @jest-environment jsdom
  */
-import { AUTH_API_BASE, WEATHER_API_BASE, fetchWithAuthRetry, getSavedLocations, saveLocation, deleteSavedLocation, reorderSavedLocations } from '../../utils/api';
+import {
+  AUTH_API_BASE,
+  WEATHER_API_BASE,
+  buildAuthLoginUrl,
+  fetchWithAuthRetry,
+  getAppHomeCallbackUrl,
+  getCurrentCallbackUrl,
+  getSavedLocations,
+  saveLocation,
+  deleteSavedLocation,
+  reorderSavedLocations,
+} from '../../utils/api';
 
 describe('API Utils', () => {
   describe('AUTH_API_BASE', () => {
@@ -70,9 +81,31 @@ describe('fetchWithAuthRetry', () => {
   it('should throw when refresh fails', async () => {
     mockFetch.mockResolvedValueOnce({ status: 401, ok: false });
     mockFetch.mockResolvedValueOnce({ status: 401, ok: false });
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    await expect(fetchWithAuthRetry('/test-url')).rejects.toThrow('Session expired. Redirecting to login.');
-    expect(mockFetch).toHaveBeenNthCalledWith(2, `${AUTH_API_BASE}/api/auth/v1/refresh`, expect.any(Object));
+    try {
+      await expect(fetchWithAuthRetry('/test-url')).rejects.toThrow('Session expired. Redirecting to login.');
+      expect(mockFetch).toHaveBeenNthCalledWith(2, `${AUTH_API_BASE}/api/auth/v1/refresh`, expect.any(Object));
+    } finally {
+      consoleErrorSpy.mockRestore();
+    }
+  });
+});
+
+describe('auth redirect helpers', () => {
+  it('should build a login callback from the full current URL', () => {
+    window.history.replaceState({}, '', '/?units=metric');
+
+    expect(getCurrentCallbackUrl()).toBe('http://localhost/?units=metric');
+    expect(buildAuthLoginUrl()).toBe(
+      `${AUTH_API_BASE}/login?callback=${encodeURIComponent('http://localhost/?units=metric')}`
+    );
+  });
+
+  it('should build an app home callback as an absolute URL', () => {
+    window.history.replaceState({}, '', '/forecast');
+
+    expect(getAppHomeCallbackUrl()).toBe('http://localhost/');
   });
 });
 

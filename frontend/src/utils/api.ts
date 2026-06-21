@@ -10,13 +10,32 @@ export const isDev = typeof window !== "undefined" && window.location.hostname =
 export const AUTH_API_BASE = isDev ? "http://localhost:3000" : (process.env.NEXT_PUBLIC_AUTH_API_URL || "https://auth.yourdomain.tld");
 export const WEATHER_API_BASE = isDev ? "http://localhost:13001" : (process.env.NEXT_PUBLIC_WEATHER_API_URL || "https://weather.yourdomain.tld");
 
-function redirectToLogin() {
+export function getCurrentCallbackUrl() {
+  if (typeof window === "undefined") {
+    return "/";
+  }
+
+  return `${window.location.origin}${window.location.pathname}${window.location.search}`;
+}
+
+export function getAppHomeCallbackUrl() {
+  if (typeof window === "undefined") {
+    return "/";
+  }
+
+  return `${window.location.origin}/`;
+}
+
+export function buildAuthLoginUrl(callbackUrl = getCurrentCallbackUrl()) {
+  return `${AUTH_API_BASE}/login?callback=${encodeURIComponent(callbackUrl)}`;
+}
+
+export function redirectToLogin(callbackUrl = getCurrentCallbackUrl()) {
   if (typeof window === "undefined") {
     return;
   }
 
-  const callbackUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
-  window.location.href = `${AUTH_API_BASE}/login?callback=${encodeURIComponent(callbackUrl)}`;
+  window.location.href = buildAuthLoginUrl(callbackUrl);
 }
 
 export async function refreshAuthToken(): Promise<boolean> {

@@ -13,11 +13,9 @@ import { Sun, Crosshair, GraphUp, Wind } from 'react-bootstrap-icons';
 import type { Weather } from "../types/Weather";
 import type { Location } from "../types/Location";
 import { weatherCodeMap, isNightTime } from "../types/WeatherCodeMap";
-import { AUTH_API_BASE, WEATHER_API_BASE, fetchWithAuthRetry } from "../utils/api";
+import { AUTH_API_BASE, WEATHER_API_BASE, fetchWithAuthRetry, getAppHomeCallbackUrl, redirectToLogin } from "../utils/api";
 import { weatherCodeToTranslationKey, dayNumberToTranslationKey } from "../utils/weatherTranslations";
 import { getLocale } from "../i18n/client";
-
-const isDev = typeof window !== "undefined" && window.location.hostname === "localhost";
 
 function getWeatherIcon(code: string, size = 32, currentTime?: string, sunRise?: string, sunSet?: string) {
   const isNight = currentTime && sunRise && sunSet ? isNightTime(currentTime, sunRise, sunSet) : false;
@@ -81,13 +79,12 @@ export default function Home() {
           setUsername(data.userName || null);
         } else {
           setUsername(null);
-          // Redirect to login if not authenticated
-          router.push(`${AUTH_API_BASE}/login?callback=${encodeURIComponent("/")}`);
+          redirectToLogin();
         }
       } catch {
         setLoggedIn(false);
         setUsername(null);
-        router.push(`${AUTH_API_BASE}/login?callback=${encodeURIComponent("/")}`);
+        redirectToLogin();
       }
       setCheckingLogin(false);
     }
@@ -121,7 +118,7 @@ export default function Home() {
           setLoggedIn(false);
           setShowWeather(false);
           setWeather(null);
-          router.push("/login?callback=" + encodeURIComponent("/"));
+          redirectToLogin();
           return false;
         }
         if (!res.ok) {
@@ -141,7 +138,7 @@ export default function Home() {
         setLoggedIn(false);
         setShowWeather(false);
         setWeather(null);
-        router.push("/login?callback=" + encodeURIComponent("/"));
+        redirectToLogin();
       }
     }
     if (loggedIn) fetchWeatherWithAuth();
@@ -178,7 +175,7 @@ export default function Home() {
         );
         if (res.status === 401) {
           setLoggedIn(false);
-          router.push("/login?callback=" + encodeURIComponent("/"));
+          redirectToLogin();
           return;
         }
         if (res.ok) {
@@ -290,11 +287,7 @@ export default function Home() {
     setLoggedIn(false);
     setShowWeather(false);
     setWeather(null);
-    // Redirect to external auth service
-    const callbackUrl = isDev
-      ? `http://localhost:3030/`
-      : `https://weather.markpost.dev/`;
-    window.location.href = `${AUTH_API_BASE}/login?callback=${encodeURIComponent(callbackUrl)}`;
+    redirectToLogin(getAppHomeCallbackUrl());
   }
 
   function handleNavigate(page: "dashboard") {

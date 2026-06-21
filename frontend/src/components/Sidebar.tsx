@@ -4,6 +4,7 @@ import React from "react";
 import { IconHome, IconUser, IconShield, IconLogout, IconMenu2, IconX } from "@tabler/icons-react";
 import { useTranslations } from 'next-intl';
 import LanguageSelector from './LanguageSelector';
+import { AUTH_API_BASE, getAppHomeCallbackUrl } from '../utils/api';
 
 interface SidebarProps {
   username: string | null;
@@ -12,17 +13,13 @@ interface SidebarProps {
   onLogout: () => void;
 }
 
-const isDev = typeof window !== "undefined" && window.location.hostname === "localhost";
-// Configure AUTH_BASE to point to your external authentication service
-const AUTH_BASE = isDev? "http://localhost:3000": process.env.NEXT_PUBLIC_AUTH_API_URL;
-
 export default function Sidebar({ username, activePage, onNavigate, onLogout }: SidebarProps) {
   const t = useTranslations('sidebar');
   const [isOpen, setIsOpen] = React.useState(false);
 
   const handleExternalNavigation = (path: string) => {
-    const callbackUrl = `${window.location.origin}/`;
-    window.location.href = `${AUTH_BASE}${path}?callback=${encodeURIComponent(callbackUrl)}`;
+    const callbackUrl = getAppHomeCallbackUrl();
+    window.location.href = `${AUTH_API_BASE}${path}?callback=${encodeURIComponent(callbackUrl)}`;
   };
 
   const menuItems = [
