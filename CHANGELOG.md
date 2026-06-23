@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.24] - 2026-06-23
+
+### Changed
+- chore(npm)(deps-dev): bump @types/node (#71)
+
+
 ## [1.10.23] - 2026-06-21
 
 ### Changed
