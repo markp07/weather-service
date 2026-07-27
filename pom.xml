@@ -26,7 +26,7 @@
     <mapstruct.version>1.6.3</mapstruct.version>
     <lombok-mapstruct-bindings.version>0.2.0</lombok-mapstruct-bindings.version>
     <jakarta.validation-api.version>3.1.0</jakarta.validation-api.version>
-    <jackson-databind-nullable.version>0.2.10</jackson-databind-nullable.version>
+    <jackson-databind-nullable.version>0.2.11</jackson-databind-nullable.version>
     <springdoc-openapi-webmvc-core.version>3.0.3</springdoc-openapi-webmvc-core.version>
     <jjwt.version>0.13.0</jjwt.version>
     <postgresql.version>42.7.8</postgresql.version>
@@ -39,7 +39,7 @@
     <jacoco.version>0.8.15</jacoco.version>
     <fmt-maven-plugin.version>2.27</fmt-maven-plugin.version>
     <maven-failsafe.version>3.5.6</maven-failsafe.version>
-    <flatten-maven.version>1.7.3</flatten-maven.version>
+    <flatten-maven.version>1.8.0</flatten-maven.version>
     <maven-compiler.version>3.15.0</maven-compiler.version>
     <maven-resources.version>3.5.0</maven-resources.version>
     <maven-surefire.version>3.5.6</maven-surefire.version>
