@@ -519,8 +519,13 @@ export default function Home() {
                           const dayKey = dayNumberToTranslationKey[dayOfWeek];
                           return (
                           <div key={i} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            <div className="flex-1 min-w-0 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                              {i === 0 ? t('today') : i === 1 ? t('tomorrow') : tDays(dayKey)}
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {i === 0 ? t('today') : i === 1 ? t('tomorrow') : tDays(dayKey)}
+                              </div>
+                              <div className="text-xs text-gray-400 dark:text-gray-500">
+                                {String(new Date(d.time).getDate()).padStart(2, '0')}-{String(new Date(d.time).getMonth() + 1).padStart(2, '0')}
+                              </div>
                             </div>
                             <div className="flex items-center justify-center w-8 sm:w-10 flex-shrink-0">
                               {getWeatherIcon(d.weatherCode, 28, noonTime.toISOString(), d.sunRise, d.sunSet)}
