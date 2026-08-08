@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.2] - 2026-08-08
+
+### Changed
+- feat(frontend): add cached weather hydration and refresh controls (#81)
+
+
 ## [2.0.1] - 2026-08-08
 
 ### Changed
