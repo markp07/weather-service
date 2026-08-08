@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.1] - 2026-08-08
+
+### Changed
+- feat(frontend): show dd-mm date below day label in 14-day forecast (#80)
+
+
 ## [2.0.0] - 2026-08-08
 
 ### Changed
