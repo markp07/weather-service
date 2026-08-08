@@ -1,7 +1,7 @@
 'use client';
 
 import React from "react";
-import { IconHome, IconUser, IconShield, IconLogout, IconMenu2, IconX } from "@tabler/icons-react";
+import { IconHome, IconUser, IconShield, IconLogout, IconMenu2, IconX, IconRefresh } from "@tabler/icons-react";
 import { useTranslations } from 'next-intl';
 import LanguageSelector from './LanguageSelector';
 import { AUTH_API_BASE, getAppHomeCallbackUrl } from '../utils/api';
@@ -11,9 +11,11 @@ interface SidebarProps {
   activePage: "dashboard";
   onNavigate: (page: "dashboard") => void;
   onLogout: () => void;
+  onRefreshData: () => void;
+  isRefreshingData?: boolean;
 }
 
-export default function Sidebar({ username, activePage, onNavigate, onLogout }: SidebarProps) {
+export default function Sidebar({ username, activePage, onNavigate, onLogout, onRefreshData, isRefreshingData = false }: SidebarProps) {
   const t = useTranslations('sidebar');
   const [isOpen, setIsOpen] = React.useState(false);
 
@@ -90,6 +92,14 @@ export default function Sidebar({ username, activePage, onNavigate, onLogout }: 
 
           {/* Footer */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+            <button
+              onClick={onRefreshData}
+              disabled={isRefreshingData}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <IconRefresh size={20} className={isRefreshingData ? "animate-spin" : ""} />
+              <span className="font-medium">{t('refreshData')}</span>
+            </button>
             <LanguageSelector />
             <button
               onClick={onLogout}

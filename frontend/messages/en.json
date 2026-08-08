@@ -10,7 +10,8 @@
     "close": "Close",
     "confirm": "Confirm",
     "back": "Back",
-    "registering": "Registering..."
+    "registering": "Registering...",
+    "loadingData": "Loading data"
   },
   "pageTitle": {
     "dashboard": "Weather Dashboard"
@@ -20,6 +21,7 @@
     "dashboard": "Dashboard",
     "profile": "Profile",
     "security": "Security",
+    "refreshData": "Refresh data",
     "logout": "Log out",
     "language": "Language"
   },

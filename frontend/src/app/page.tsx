@@ -17,6 +17,17 @@ import { AUTH_API_BASE, WEATHER_API_BASE, fetchWithAuthRetry, getAppHomeCallback
 import { weatherCodeToTranslationKey, dayNumberToTranslationKey } from "../utils/weatherTranslations";
 import { getLocale } from "../i18n/client";
 
+const WEATHER_DASHBOARD_CACHE_KEY = "weather-dashboard-cache-v1";
+
+interface DashboardCache {
+  weather: Weather | null;
+  displayWeather: Weather | null;
+  savedLocations: Location[];
+  savedWeatherData: [number, Weather][];
+  selectedLocationId: number | null;
+  username: string | null;
+}
+
 function getWeatherIcon(code: string, size = 32, currentTime?: string, sunRise?: string, sunSet?: string) {
   const isNight = currentTime && sunRise && sunSet ? isNightTime(currentTime, sunRise, sunSet) : false;
   return weatherCodeMap[code]?.icon(size, isNight) || <Sun size={size} />;
@@ -58,11 +69,71 @@ export default function Home() {
   const [savedLocations, setSavedLocations] = React.useState<Location[]>([]);
   const [savedWeatherData, setSavedWeatherData] = React.useState<Map<number, Weather>>(new Map());
   const [loadingWeather, setLoadingWeather] = React.useState<Set<number>>(new Set());
+  const [refreshCounter, setRefreshCounter] = React.useState(0);
+  const [isRefreshingData, setIsRefreshingData] = React.useState(false);
+  const [cacheHydrated, setCacheHydrated] = React.useState(false);
   
   // UI state
   const [showLocationEditModal, setShowLocationEditModal] = React.useState(false);
   const [selectedLocationId, setSelectedLocationId] = React.useState<number | null>(null); // null = current location
   const [displayWeather, setDisplayWeather] = React.useState<Weather | null>(null);
+  
+  const handleRefreshData = React.useCallback(() => {
+    setRefreshCounter(prev => prev + 1);
+  }, []);
+
+  React.useEffect(() => {
+    try {
+      const rawCache = window.localStorage.getItem(WEATHER_DASHBOARD_CACHE_KEY);
+      if (!rawCache) {
+        setCacheHydrated(true);
+        return;
+      }
+      const cache: DashboardCache = JSON.parse(rawCache);
+      if (cache.weather) {
+        setWeather(cache.weather);
+        setShowWeather(true);
+      }
+      if (cache.displayWeather) {
+        setDisplayWeather(cache.displayWeather);
+      } else if (cache.weather) {
+        setDisplayWeather(cache.weather);
+      }
+      if (Array.isArray(cache.savedLocations)) {
+        setSavedLocations(cache.savedLocations);
+      }
+      if (Array.isArray(cache.savedWeatherData)) {
+        setSavedWeatherData(new Map(cache.savedWeatherData));
+      }
+      if (typeof cache.selectedLocationId === "number" || cache.selectedLocationId === null) {
+        setSelectedLocationId(cache.selectedLocationId);
+      }
+      if (typeof cache.username === "string" || cache.username === null) {
+        setUsername(cache.username);
+      }
+    } catch (error) {
+      console.error("Failed to hydrate dashboard cache:", error);
+    } finally {
+      setCacheHydrated(true);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (!cacheHydrated) return;
+    try {
+      const cache: DashboardCache = {
+        weather,
+        displayWeather,
+        savedLocations,
+        savedWeatherData: Array.from(savedWeatherData.entries()),
+        selectedLocationId,
+        username,
+      };
+      window.localStorage.setItem(WEATHER_DASHBOARD_CACHE_KEY, JSON.stringify(cache));
+    } catch (error) {
+      console.error("Failed to save dashboard cache:", error);
+    }
+  }, [cacheHydrated, weather, displayWeather, savedLocations, savedWeatherData, selectedLocationId, username]);
 
   // Update document title based on selected language
   React.useEffect(() => {
@@ -93,6 +164,7 @@ export default function Home() {
 
   React.useEffect(() => {
     async function fetchWeatherWithAuth() {
+      setIsRefreshingData(true);
       async function fetchWeather() {
         const getLocation = () => new Promise<GeolocationPosition>((resolve, reject) => {
           if (!navigator.geolocation) return reject("Geolocation not supported");
@@ -126,7 +198,11 @@ export default function Home() {
           setShowWeather(false);
           return false;
         }
-        setWeather(await res.json());
+        const weatherData: Weather = await res.json();
+        setWeather(weatherData);
+        if (selectedLocationId === null) {
+          setDisplayWeather(weatherData);
+        }
         setShowWeather(true);
         setWeatherError(null);
         return true;
@@ -139,33 +215,46 @@ export default function Home() {
         setShowWeather(false);
         setWeather(null);
         redirectToLogin();
+      } finally {
+        setIsRefreshingData(false);
       }
     }
     if (loggedIn) fetchWeatherWithAuth();
-  }, [loggedIn]);
+  }, [loggedIn, refreshCounter, selectedLocationId]);
 
   // Load saved locations from backend on mount
   React.useEffect(() => {
     async function loadSavedLocations() {
       if (loggedIn) {
+        setIsRefreshingData(true);
         try {
           const { getSavedLocations } = await import("../utils/api");
           const locations = await getSavedLocations();
           setSavedLocations(locations);
         } catch (e) {
           console.error("Failed to load saved locations:", e);
+        } finally {
+          setIsRefreshingData(false);
         }
       }
     }
     loadSavedLocations();
-  }, [loggedIn]);
+  }, [loggedIn, refreshCounter]);
 
   // Fetch weather for saved locations
   React.useEffect(() => {
-    if (!loggedIn || savedLocations.length === 0) return;
+    if (!loggedIn) return;
+    if (savedLocations.length === 0) {
+      setSavedWeatherData(new Map());
+      setLoadingWeather(new Set());
+      return;
+    }
+
+    let isMounted = true;
+    setIsRefreshingData(true);
+    setLoadingWeather(new Set(savedLocations.map(location => location.id)));
 
     async function fetchWeatherForLocation(location: Location) {
-      setLoadingWeather(prev => new Set(prev).add(location.id));
       const language = getLocale();
       try {
         const res = await fetchWithAuthRetry(
@@ -180,22 +269,32 @@ export default function Home() {
         }
         if (res.ok) {
           const data: Weather = await res.json();
-          setSavedWeatherData(prev => new Map(prev).set(location.id, data));
+          if (isMounted) {
+            setSavedWeatherData(prev => new Map(prev).set(location.id, data));
+          }
         }
       } catch (error) {
         console.error(`Failed to fetch weather for ${location.name}:`, error);
       } finally {
-        setLoadingWeather(prev => {
-          const next = new Set(prev);
-          next.delete(location.id);
-          return next;
-        });
+        if (isMounted) {
+          setLoadingWeather(prev => {
+            const next = new Set(prev);
+            next.delete(location.id);
+            return next;
+          });
+        }
       }
     }
 
-    savedLocations.forEach(location => {
-      fetchWeatherForLocation(location);
+    Promise.all(savedLocations.map(location => fetchWeatherForLocation(location))).finally(() => {
+      if (isMounted) {
+        setIsRefreshingData(false);
+      }
     });
+
+    return () => {
+      isMounted = false;
+    };
   }, [loggedIn, savedLocations]);
 
   const handleLocationSelect = async (location: Location) => {
@@ -287,6 +386,12 @@ export default function Home() {
     setLoggedIn(false);
     setShowWeather(false);
     setWeather(null);
+    setDisplayWeather(null);
+    setSavedLocations([]);
+    setSavedWeatherData(new Map());
+    setLoadingWeather(new Set());
+    setIsRefreshingData(false);
+    window.localStorage.removeItem(WEATHER_DASHBOARD_CACHE_KEY);
     redirectToLogin(getAppHomeCallbackUrl());
   }
 
@@ -294,7 +399,9 @@ export default function Home() {
     router.push("/");
   }
 
-  if (checkingLogin) {
+  const showCachedDashboard = cacheHydrated && checkingLogin && !!displayWeather && showWeather;
+
+  if (checkingLogin && !showCachedDashboard) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen w-full">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
@@ -305,18 +412,20 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen w-full bg-gray-50 dark:bg-gray-900">
-      {loggedIn && (
+      {(loggedIn || showCachedDashboard) && (
         <Sidebar
           username={username}
           activePage="dashboard"
           onNavigate={handleNavigate}
           onLogout={handleLogout}
+          onRefreshData={handleRefreshData}
+          isRefreshingData={isRefreshingData}
         />
       )}
       
       {/* Main content area */}
       <main className="flex-1 overflow-auto lg:ml-64">
-        {loggedIn ? (
+        {(loggedIn || showCachedDashboard) ? (
           <div className="p-2 sm:p-4 lg:p-6">
                 {showWeather && weather ? (
                   <div className="max-w-6xl mx-auto space-y-2 sm:space-y-4">
@@ -462,6 +571,15 @@ export default function Home() {
         ) : null}
         <Footer />
       </main>
+
+      {(isRefreshingData || showCachedDashboard) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl px-6 py-5 flex flex-col items-center gap-3">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+            <p className="text-gray-800 dark:text-gray-200 font-semibold">{tCommon('loadingData')}</p>
+          </div>
+        </div>
+      )}
 
       {/* Hourly Graph Modal */}
       {displayWeather && (
