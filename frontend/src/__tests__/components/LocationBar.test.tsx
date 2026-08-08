@@ -28,9 +28,6 @@ describe('LocationBar Component', () => {
       weatherCode: '0',
       windSpeed: 10,
       windDirection: 'N',
-      humidity: 50,
-      precipitation: 0,
-      precipitationProbability: 0,
     },
     hourly: [],
     daily: [{
