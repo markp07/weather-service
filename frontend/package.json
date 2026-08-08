@@ -14,7 +14,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@tabler/icons-react": "^3.46.0",
-    "next": "^16.2.12",
+    "next": "16.2.12",
     "next-intl": "^4.13.4",
     "present": "^1.0.0",
     "react": "19.2.8",
