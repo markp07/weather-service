@@ -8,10 +8,12 @@ import Sidebar from '../../components/Sidebar';
 describe('Sidebar Component', () => {
   const mockOnNavigate = jest.fn();
   const mockOnLogout = jest.fn();
+  const mockOnRefreshData = jest.fn();
 
   beforeEach(() => {
     mockOnNavigate.mockClear();
     mockOnLogout.mockClear();
+    mockOnRefreshData.mockClear();
     // Set the environment variable for the version
     process.env.NEXT_PUBLIC_APP_VERSION = '1.6.4';
   });
@@ -23,6 +25,7 @@ describe('Sidebar Component', () => {
         activePage="dashboard"
         onNavigate={mockOnNavigate}
         onLogout={mockOnLogout}
+        onRefreshData={mockOnRefreshData}
       />
     );
     
@@ -37,6 +40,7 @@ describe('Sidebar Component', () => {
         activePage="dashboard"
         onNavigate={mockOnNavigate}
         onLogout={mockOnLogout}
+        onRefreshData={mockOnRefreshData}
       />
     );
     
@@ -50,6 +54,7 @@ describe('Sidebar Component', () => {
         activePage="dashboard"
         onNavigate={mockOnNavigate}
         onLogout={mockOnLogout}
+        onRefreshData={mockOnRefreshData}
       />
     );
     
@@ -67,6 +72,7 @@ describe('Sidebar Component', () => {
         activePage="dashboard"
         onNavigate={mockOnNavigate}
         onLogout={mockOnLogout}
+        onRefreshData={mockOnRefreshData}
       />
     );
     
@@ -75,5 +81,19 @@ describe('Sidebar Component', () => {
 
     // Restore the original value
     process.env.NEXT_PUBLIC_APP_VERSION = originalVersion;
+  });
+
+  it('should display refresh data button', () => {
+    render(
+      <Sidebar
+        username="testuser"
+        activePage="dashboard"
+        onNavigate={mockOnNavigate}
+        onLogout={mockOnLogout}
+        onRefreshData={mockOnRefreshData}
+      />
+    );
+
+    expect(screen.getByText('Refresh data')).toBeInTheDocument();
   });
 });

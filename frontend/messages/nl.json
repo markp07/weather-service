@@ -9,7 +9,8 @@
     "edit": "Bewerken",
     "close": "Sluiten",
     "confirm": "Bevestigen",
-    "back": "Terug"
+    "back": "Terug",
+    "loadingData": "Gegevens laden"
   },
   "pageTitle": {
     "dashboard": "Weer Dashboard"
@@ -19,6 +20,7 @@
     "dashboard": "Dashboard",
     "profile": "Profiel",
     "security": "Beveiliging",
+    "refreshData": "Gegevens vernieuwen",
     "logout": "Uitloggen",
     "language": "Taal"
   },

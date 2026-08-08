@@ -9,7 +9,8 @@
     "edit": "Modifier",
     "close": "Fermer",
     "confirm": "Confirmer",
-    "back": "Retour"
+    "back": "Retour",
+    "loadingData": "Chargement des données"
   },
   "pageTitle": {
     "dashboard": "Tableau de Bord Météo"
@@ -19,6 +20,7 @@
     "dashboard": "Tableau de bord",
     "profile": "Profil",
     "security": "Sécurité",
+    "refreshData": "Actualiser les données",
     "logout": "Déconnexion",
     "language": "Langue"
   },

@@ -9,7 +9,8 @@
     "edit": "Bearbeiten",
     "close": "Schließen",
     "confirm": "Bestätigen",
-    "back": "Zurück"
+    "back": "Zurück",
+    "loadingData": "Daten werden geladen"
   },
   "pageTitle": {
     "dashboard": "Wetter Dashboard"
@@ -19,6 +20,7 @@
     "dashboard": "Dashboard",
     "profile": "Profil",
     "security": "Sicherheit",
+    "refreshData": "Daten aktualisieren",
     "logout": "Abmelden",
     "language": "Sprache"
   },
