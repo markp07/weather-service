@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] - 2026-09-27
+
+### Changed
+- chore(maven)(deps): bump the maven-dependencies group across 1 directory with 7 updates (#93)
+
+
 ## [2.0.5] - 2026-08-30
 
 ### Changed
