@@ -22,6 +22,7 @@ describe('LocationBar Component', () => {
     latitude: 0,
     longitude: 0,
     timezone: 'UTC',
+    elevation: 0,
     current: {
       time: '2024-01-01T12:00:00Z',
       temperature: 20,
