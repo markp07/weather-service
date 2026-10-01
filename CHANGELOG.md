@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.2] - 2026-10-01
+
+### Changed
+- Fix Docker frontend builds by isolating local Next.js artifacts (#96)
+
+
 ## [3.0.1] - 2026-09-27
 
 ### Changed
