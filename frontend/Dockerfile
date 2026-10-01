@@ -11,7 +11,7 @@ ENV NEXT_PUBLIC_AUTH_API_URL=$NEXT_PUBLIC_AUTH_API_URL
 ENV NEXT_PUBLIC_WEATHER_API_URL=$NEXT_PUBLIC_WEATHER_API_URL
 
 COPY package*.json ./
-RUN npm install
+RUN npm install --no-fund --no-audit
 COPY . .
 RUN npm run build
 

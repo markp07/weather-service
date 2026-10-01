@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import nl.markpost.weather.model.Administrative;
 import nl.markpost.weather.model.CurrentResponse;
@@ -102,6 +103,56 @@ class WeatherMapperTest {
     assertEquals(12, h2.getWindSpeed());
     assertEquals(WindDirection.W, h2.getWindDirection());
     assertEquals(5.0, h2.getUvIndex());
+  }
+
+  @Test
+  @DisplayName("Should tolerate null entries in weather lists")
+  void toWeather_ignoresNullListEntries() {
+    DailyResponse dailyResponse = new DailyResponse();
+    dailyResponse.setTime(List.of("2025-07-23"));
+    dailyResponse.setWeather_code(Arrays.asList(null, 80));
+    dailyResponse.setTemperature_2m_max(Arrays.asList(25.5));
+    dailyResponse.setTemperature_2m_min(Arrays.asList(15.0));
+    dailyResponse.setPrecipitation_sum(Arrays.asList(0.0));
+    dailyResponse.setPrecipitation_probability_max(Arrays.asList((Integer) null));
+    dailyResponse.setWind_speed_10m_max(Arrays.asList((Integer) null));
+    dailyResponse.setWind_direction_10m_dominant(Arrays.asList((Integer) null));
+
+    HourlyResponse hourlyResponse = new HourlyResponse();
+    hourlyResponse.setTime(Arrays.asList("2025-07-23T13:00:00"));
+    hourlyResponse.setWeather_code(Arrays.asList((Integer) null));
+    hourlyResponse.setTemperature_2m(Arrays.asList((Double) null));
+    hourlyResponse.setPrecipitation_probability(Arrays.asList((Integer) null));
+    hourlyResponse.setPrecipitation(Arrays.asList((Double) null));
+    hourlyResponse.setWind_speed_10m(Arrays.asList((Integer) null));
+    hourlyResponse.setWind_direction_10m(Arrays.asList((Integer) null));
+    hourlyResponse.setUv_index(Arrays.asList((Double) null));
+
+    CurrentResponse currentResponse = new CurrentResponse();
+    currentResponse.setTime("2025-07-23T12:00:00");
+    currentResponse.setWeather_code(1);
+    currentResponse.setTemperature_2m(22.5);
+    currentResponse.setWind_speed_10m(5);
+    currentResponse.setWind_direction_10m(270);
+
+    WeatherResponse response = new WeatherResponse();
+    response.setLatitude(52.0);
+    response.setLongitude(4.0);
+    response.setTimezone("Europe/Berlin");
+    response.setElevation(10.0);
+    response.setCurrent(currentResponse);
+    response.setDaily(dailyResponse);
+    response.setHourly(hourlyResponse);
+
+    Weather weather = mapper.toWeather(response, null);
+
+    assertNotNull(weather);
+    assertNotNull(weather.getDaily());
+    assertNotNull(weather.getHourly());
+    assertEquals(1, weather.getDaily().size());
+    assertEquals(1, weather.getHourly().size());
+    assertEquals(WeatherCode.CLEAR_SKY, weather.getDaily().getFirst().getWeatherCode());
+    assertEquals(WeatherCode.CLEAR_SKY, weather.getHourly().getFirst().getWeatherCode());
   }
 
   @Test
