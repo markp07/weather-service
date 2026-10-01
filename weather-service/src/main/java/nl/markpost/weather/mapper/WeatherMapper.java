@@ -113,21 +113,29 @@ public interface WeatherMapper {
     int size = times != null ? times.size() : 0;
     for (int i = 0; i < size; i++) {
       LocalDateTime time = i < times.size() ? mapToLocalDateTime(times.get(i)) : null;
-      WeatherCode weatherCode =
-          codes != null && i < codes.size() ? WeatherCode.fromCode(codes.get(i))
-              : WeatherCode.CLEAR_SKY;
-      double temperatureMin = tempMin != null && i < tempMin.size() ? tempMin.get(i) : 0.0;
-      double temperatureMax = tempMax != null && i < tempMax.size() ? tempMax.get(i) : 0.0;
-      double precipitation = precips != null && i < precips.size() ? precips.get(i) : 0.0;
+      Integer code = codes != null && i < codes.size() ? codes.get(i) : null;
+      WeatherCode weatherCode = code != null ? WeatherCode.fromCode(code) : WeatherCode.CLEAR_SKY;
+      Double temperatureMinValue = tempMin != null && i < tempMin.size() ? tempMin.get(i) : null;
+      Double temperatureMaxValue = tempMax != null && i < tempMax.size() ? tempMax.get(i) : null;
+      Double precipitationValue = precips != null && i < precips.size() ? precips.get(i) : null;
+      Integer precipitationProbabilityMaxValue =
+          precipProbMax != null && i < precipProbMax.size() ? precipProbMax.get(i) : null;
+      Integer windSpeedValue = windSpeeds != null && i < windSpeeds.size() ? windSpeeds.get(i) : null;
+      Integer windDirectionValue = windDirections != null && i < windDirections.size()
+          ? windDirections.get(i) : null;
+      String sunRiseValue = sunRises != null && i < sunRises.size() ? sunRises.get(i) : null;
+      String sunSetValue = sunSets != null && i < sunSets.size() ? sunSets.get(i) : null;
+      double temperatureMin = temperatureMinValue != null ? temperatureMinValue : 0.0;
+      double temperatureMax = temperatureMaxValue != null ? temperatureMaxValue : 0.0;
+      double precipitation = precipitationValue != null ? precipitationValue : 0.0;
       int precipitationProbabilityMax =
-          precipProbMax != null && i < precipProbMax.size() ? precipProbMax.get(i) : 0;
-      int windSpeed = windSpeeds != null && i < windSpeeds.size() ? windSpeeds.get(i) : 0;
-      WindDirection windDirection = windDirections != null && i < windDirections.size()
-          ? WindDirection.fromDegree(windDirections.get(i)) : WindDirection.N;
-      LocalDateTime sunRise =
-          sunRises != null && i < sunRises.size() ? mapToLocalDateTime(sunRises.get(i)) : null;
-      LocalDateTime sunSet =
-          sunSets != null && i < sunSets.size() ? mapToLocalDateTime(sunSets.get(i)) : null;
+          precipitationProbabilityMaxValue != null ? precipitationProbabilityMaxValue : 0;
+      int windSpeed = windSpeedValue != null ? windSpeedValue : 0;
+      WindDirection windDirection =
+          windDirectionValue != null ? WindDirection.fromDegree(windDirectionValue)
+              : WindDirection.N;
+      LocalDateTime sunRise = sunRiseValue != null ? mapToLocalDateTime(sunRiseValue) : null;
+      LocalDateTime sunSet = sunSetValue != null ? mapToLocalDateTime(sunSetValue) : null;
       result.add(new Daily(time, weatherCode, temperatureMin, temperatureMax, precipitation,
           precipitationProbabilityMax, windSpeed, windDirection, sunRise, sunSet));
     }
@@ -159,8 +167,12 @@ public interface WeatherMapper {
     int startIdx = 0;
     // Find first index where time >= now
     for (int i = 0; i < size; i++) {
-      LocalDateTime time = mapToLocalDateTime(times.get(i));
-      if (!time.isBefore(now)) {
+      String timeValue = times != null && i < times.size() ? times.get(i) : null;
+      if (timeValue == null) {
+        continue;
+      }
+      LocalDateTime time = mapToLocalDateTime(timeValue);
+      if (time != null && !time.isBefore(now)) {
         startIdx = i + 1;
         break;
       }
@@ -168,17 +180,24 @@ public interface WeatherMapper {
     int endIdx = Math.min(startIdx + 48, size);
     for (int i = startIdx; i < endIdx; i++) {
       LocalDateTime time = i < times.size() ? mapToLocalDateTime(times.get(i)) : null;
-      WeatherCode weatherCode =
-          codes != null && i < codes.size() ? WeatherCode.fromCode(codes.get(i))
-              : WeatherCode.CLEAR_SKY;
-      double temperature = temps != null && i < temps.size() ? temps.get(i) : 0.0;
-      double precipitation = precipSums != null && i < precipSums.size() ? precipSums.get(i) : 0.0;
-      int precipitationProbability =
-          precipProbs != null && i < precipProbs.size() ? precipProbs.get(i) : 0;
-      int windSpeed = windSpeeds != null && i < windSpeeds.size() ? windSpeeds.get(i) : 0;
-      WindDirection windDirection = windDirections != null && i < windDirections.size()
-          ? WindDirection.fromDegree(windDirections.get(i)) : WindDirection.N;
-      double uvIndex = uvIndexValues != null && i < uvIndexValues.size() ? uvIndexValues.get(i) : 0.0;
+      Integer code = codes != null && i < codes.size() ? codes.get(i) : null;
+      WeatherCode weatherCode = code != null ? WeatherCode.fromCode(code) : WeatherCode.CLEAR_SKY;
+      Double temperatureValue = temps != null && i < temps.size() ? temps.get(i) : null;
+      Double precipitationValue = precipSums != null && i < precipSums.size() ? precipSums.get(i) : null;
+      Integer precipitationProbabilityValue =
+          precipProbs != null && i < precipProbs.size() ? precipProbs.get(i) : null;
+      Integer windSpeedValue = windSpeeds != null && i < windSpeeds.size() ? windSpeeds.get(i) : null;
+      Integer windDirectionValue = windDirections != null && i < windDirections.size()
+          ? windDirections.get(i) : null;
+      Double uvIndexValue = uvIndexValues != null && i < uvIndexValues.size() ? uvIndexValues.get(i) : null;
+      double temperature = temperatureValue != null ? temperatureValue : 0.0;
+      double precipitation = precipitationValue != null ? precipitationValue : 0.0;
+      int precipitationProbability = precipitationProbabilityValue != null ? precipitationProbabilityValue : 0;
+      int windSpeed = windSpeedValue != null ? windSpeedValue : 0;
+      WindDirection windDirection =
+          windDirectionValue != null ? WindDirection.fromDegree(windDirectionValue)
+              : WindDirection.N;
+      double uvIndex = uvIndexValue != null ? uvIndexValue : 0.0;
       result.add(new Hourly(time, weatherCode, temperature, precipitation, precipitationProbability,
           windSpeed, windDirection, uvIndex));
     }
