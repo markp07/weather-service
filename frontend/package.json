@@ -14,8 +14,8 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@tabler/icons-react": "^3.48.0",
-    "next": "16.3.6",
-    "next-intl": "^4.14.7",
+    "next": "16.3.8",
+    "next-intl": "^4.14.8",
     "present": "^1.0.0",
     "react": "19.3.0",
     "react-bootstrap-icons": "^1.11.6",
@@ -32,11 +32,11 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^10",
-    "eslint-config-next": "16.3.6",
+    "eslint-config-next": "16.3.8",
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.2",
     "tailwindcss": "^4",
-    "ts-jest": "^29.4.13",
-    "typescript": "^6.0.3"
+    "ts-jest": "^29.4.14",
+    "typescript": "^7.0.2"
   }
 }
