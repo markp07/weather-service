@@ -1,6 +1,6 @@
 services:
   weather-redis:
-    image: redis:latest
+    image: redis:18
     container_name: weather-redis
     restart: always
     ports:
