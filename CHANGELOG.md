@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.5] - 2026-11-21
+
+### Changed
+- Update docker-compose.yml
+
+
 ## [3.0.4] - 2026-11-01
 
 ### Changed
